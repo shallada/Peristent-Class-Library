@@ -1,0 +1,118 @@
+MDFile implement AutoClosable{
+	
+	private FileChannel channel;
+	private long MDSize;
+	
+	private MDFile(FileChannel channel){
+		this.channel = channel;
+	}
+	
+	/**
+	 *	Creates a file at the path location, and instantiates a MDFile with a channel to the file
+	 *	Throws a FileExistsException if the file at the path has already been created
+	*/
+	public static MDFile create(String path, long MDSize){
+		if DoesExist()
+			throw FileExistsException()
+		Create new MDFile(FileChannel.Open(path, {Create_New, Read, Write})
+		MDFile.MDSize = MDSize;
+		Write MDSize to file;
+		return MDFile;
+	}
+	
+	/**
+	 *	Instantiates a MDFile object with a channel to the file in the path.
+	 *	Throws a FileNotFoundException if there isn't a file at the path
+	*/
+	public static MDFile open(String path){
+		if (!DoesExist())
+			Throw FileNotFoundException();
+		Instantiate new MDFile(FileChannel.Open(path, {Read, Write})
+		MDFile.MDSize = ReadLong from channel
+		return MDFile
+	}
+	
+	/**
+	 *	Checks a path to see if it exists and that it is points to a file.
+	*/
+	public static bool doesExist(String Path){
+		return Files.Exists(path) && Files.isRegularFile(path);
+	}
+	
+	/**
+	*	Closes resources the class uses
+	*/
+	@Override
+	public void close(){
+		channel.close();
+	}
+	
+	/**
+	*	Reads bytes into the buffer and return the number of bytes that were read.
+	*/
+	public int read(ByteBuffer buffer){
+		return channel.read(buffer);
+	}
+	
+	/**
+	*	Changes the position of the channel to the position given.
+	*/
+	public void seek(long position){
+		channel.position(offsetMD(position));
+	}
+	
+	/**
+	*	Write the contents of the ByteBuffer to the channel
+	*/
+	public void write(ByteBuffer buffer){
+		channel.write(buffer);
+	}
+		
+	//Return position
+	
+	/**
+	*	Gets the offset of the metadata, to ensure that classes using the MDFile cannot access the metadata.
+	*/
+	private long offsetMD(long position){
+		return position + MDSize + long.size;
+	}
+	
+	/**
+	*	Reads the meta data into a buffer, prepares it for reading, and returns the buffer.
+	*/
+	public ByteBuffer GetMetadata(){
+		ByteBuffer MD = ByteBuffer.Allocate(MDSize);
+		channel.Read(MD, long.Size);
+		MD.flip();
+		return MD;
+	}
+	
+	/**
+	*	Takes in a buffer with the meta data and writes it to the channel
+	*/
+	public void PutMetaData(ByteBuffer buffer){
+		if(buffer.limit == MDSize){
+			throw BufferMismatchException();
+		}
+		channel.write(buffer, long.size);
+	}
+}
+
+interface PersistSerialize{
+	
+	int GetSize();
+	void Serialize(ByteBuffer)
+	void Load(ByteBuffer buffer); //Load data into existing instance
+	//Parameterless constructor
+	
+}
+
+/**
+*	The interface PersistantArray needs to implement this to allow data structures to access meta data.
+*/
+interface MetaData{
+	ByteBuffer GetMetadata();
+	void PutMetadata(ByteBuffer buffer)
+}
+
+
