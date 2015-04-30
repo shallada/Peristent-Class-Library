@@ -16,7 +16,8 @@ public class BTree<E> {
 	}
 
 	public void add(long key, E value) {
-		//Call add with new KV-pair object
+		//create new Pair(key, value)
+		//call add(Pair p) with new Pair
 	}
 
 	public void add(Pair p) {
