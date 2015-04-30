@@ -98,15 +98,6 @@ MDFile implement AutoClosable{
 	}
 }
 
-interface PersistSerialize{
-	
-	int GetSize();
-	void Serialize(ByteBuffer)
-	void Load(ByteBuffer buffer); //Load data into existing instance
-	//Parameterless constructor
-	
-}
-
 /**
 *	The interface PersistantArray needs to implement this to allow data structures to access meta data.
 */
