@@ -20,7 +20,7 @@ public interface PersistentArray
         long allocate() throws IOException;
 
         /**
-         * Persists the current metadata and closes the array
+         * Persists the current metadata and closes the data
          */
         void close() throws IOException;
 
