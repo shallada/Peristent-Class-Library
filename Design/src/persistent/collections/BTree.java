@@ -112,9 +112,15 @@ public class BTree<E extends Persistable> {
 
 	//Functions as a way to update the root index in the PA
 	private void writeMetaData() {
-		//ByteBuffer.allocate(Long.SIZE)
+		//Get MD ByteBuffer from pa
 		//write root node's index to buffer
-		//put bytebuffer as metadata to pa
+		//pa.persistMetaData()
 	}
+
+	public static <E> int getRecordSize(int numOfNode, E value) {
+		//Node<E> example = new Node<E>(0, numOfNodes, true)
+		//return example.getSize()
+	}
+
 
  
