@@ -1,9 +1,13 @@
 package persistent.collections;
 
-public class Node implements PersistSerializable {
-	private Pair[] pairs;
+public class Node<E extends Persistable> implements Persistable {
+	private Pair<E>[] pairs;
 	private long index;
 	private boolean isLeaf;
+
+	public Node() {
+
+	}
 
 	public Node(long index, int width, boolean isLeaf) {
 		//set values
@@ -17,4 +21,29 @@ public class Node implements PersistSerializable {
 	/*
 	Getters and setters
 	*/
+
+	public int getSize() {
+		//Long + Boolean + (size of pair * num of pairs)
+	}
+
+	public ByteBuffer allocate {
+		return ByteBuffer.allocate(getSize());
+	}
+
+	public void Serialize(ByteBuffer buffer) {
+		//serialize index
+		//serialize isLeaf
+		//for each pair
+			//if pair is null
+				//Write 0s for the length of pair.getSize()
+			//else
+				//call serialize on the pair and pass in buffer
+	}
+
+	public void Load(ByteBuffer buffer) {
+		//index = first 8 bytes
+		//isLeaf = next byte
+		//for each pair
+			//call load on the pair and pass in buffer
+	}
 }
