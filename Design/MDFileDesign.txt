@@ -2,6 +2,7 @@ MDFile implement AutoClosable{
 	
 	private FileChannel channel;
 	private long MDSize;
+	private ByteBuffer AllMetadata;
 	
 	private MDFile(FileChannel channel){
 		this.channel = channel;
@@ -11,13 +12,14 @@ MDFile implement AutoClosable{
 	 *	Creates a file at the path location, and instantiates a MDFile with a channel to the file
 	 *	Throws a FileExistsException if the file at the path has already been created
 	*/
-	public static MDFile create(String path, long MDSize){
+	public static void create(String path, long MDSize){
 		if DoesExist()
 			throw FileExistsException()
-		Create new MDFile(FileChannel.Open(path, {Create_New, Read, Write})
-		MDFile.MDSize = MDSize;
+		FileChannel channel = FileChannel.Open(path, {Create_New, Read, Write};
+		ByteBuffer AllMetadata = ByteBuffer.allocate(MDSize);
 		Write MDSize to file;
-		return MDFile;
+		Write AllMetaData to file
+		MDfile.close();
 	}
 	
 	/**
@@ -29,6 +31,10 @@ MDFile implement AutoClosable{
 			Throw FileNotFoundException();
 		Instantiate new MDFile(FileChannel.Open(path, {Read, Write})
 		MDFile.MDSize = ReadLong from channel
+		ByteBuffer MD = ByteBuffer.Allocate(MDSize);
+		channel.Read(MD, long.BYTES);
+		MD.flip();
+		MDFile.AllMetadata = MD;
 		return MDFile
 	}
 	
@@ -78,32 +84,18 @@ MDFile implement AutoClosable{
 	}
 	
 	/**
-	*	Reads the meta data into a buffer, prepares it for reading, and returns the buffer.
+	*	Returns the ByteBuffer obtained in creation or opening, with the position at the beginning of the buffer.
 	*/
 	public ByteBuffer GetMetadata(){
-		ByteBuffer MD = ByteBuffer.Allocate(MDSize);
-		channel.Read(MD, long.Size);
-		MD.flip();
-		return MD;
+		AllMetadata.rewind();
+		return AllMetadata;
 	}
 	
 	/**
-	*	Takes in a buffer with the meta data and writes it to the channel
+	*	Takes in a buffer with the meta data and writes it to the channel, offset to avoid MDSize
 	*/
-	public void PutMetaData(ByteBuffer buffer){
-		if(buffer.limit == MDSize){
-			throw BufferMismatchException();
-		}
-		channel.write(buffer, long.size);
+	public void persistMetadata(){
+		channel.write(AllMetadata, long.size);
 	}
 }
-
-/**
-*	The interface PersistantArray needs to implement this to allow data structures to access meta data.
-*/
-interface MetaData{
-	ByteBuffer GetMetadata();
-	void PutMetadata(ByteBuffer buffer)
-}
-
 
