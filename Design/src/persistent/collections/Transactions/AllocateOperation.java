@@ -16,16 +16,16 @@ public class AllocateOperation implements Operation
     
     public void execute() { }
     
-    
+    @Override
     public void undo() {
         pa.transactionDelete(ref);
     }
-    
+    @Override
     public void setNext(long nextRef){
         this.nextRef = nextRef;
     }
-        
-    long getNext(){
+    @Override
+    public long getNext(){
         return this.nextRef;
     }
 

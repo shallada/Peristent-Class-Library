@@ -5,4 +5,5 @@ public interface Operation
     void execute();
     void undo();
     void setNext(long nextRef);
+	long getNext();
 }
