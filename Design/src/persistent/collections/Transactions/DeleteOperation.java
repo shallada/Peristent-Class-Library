@@ -1,5 +1,8 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import persistent.collections.TransactionPersistentArray;
 
 public class DeleteOperation implements Operation
@@ -8,7 +11,7 @@ public class DeleteOperation implements Operation
     private long nextRef = -1;
     private long ref;
     private TransactionPersistentArray pa;
-    private ByteArray oldData;
+    private ByteBuffer oldData;
     
     public DeleteOperation(TransactionPersistentArray pa, long ref){
         this.ref = ref;
@@ -17,8 +20,18 @@ public class DeleteOperation implements Operation
 
     @Override
     public void execute(){
-        oldData = pa.get(ref);
-        pa.del(ref);
+        try {
+			oldData = pa.get(ref);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        try {
+			pa.delete(ref);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     @Override

@@ -1,16 +1,19 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import persistent.collections.TransactionPersistentArray;
 
 public class PutOperation implements Operation {
 
 	private long nextRef = -1;
 	private long ref;
-	private ByteArray data;
-	private ByteArray oldData;
+	private ByteBuffer data;
+	private ByteBuffer oldData;
 	private TransactionPersistentArray pa;
 
-	public PutOperation(TransactionPersistentArray pa, long ref, ByteArray data) {
+	public PutOperation(TransactionPersistentArray pa, long ref, ByteBuffer data) {
 		this.ref = ref;
 		this.pa = pa;
 		this.data = data;
@@ -18,13 +21,28 @@ public class PutOperation implements Operation {
 
 	@Override
 	public void execute() {
-		oldData = pa.get(ref);
-		pa.put(ref, data);
+		try {
+			oldData = pa.get(ref);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			pa.put(ref, data);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void undo() {
-		pa.put(ref, oldData);
+		try {
+			pa.put(ref, oldData);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

@@ -91,15 +91,15 @@ public class TransactionPersistentArray implements PersistentArray {
 		lowerPersistantArray.persistMetadata();
 	}
 	
-	long transactionAllocate() throws IOException {
+	public long transactionAllocate() throws IOException {
         return lowerPersistantArray.allocate();
     }
 
-    void transactionPut(long index, ByteBuffer data) throws IOException{
+    public void transactionPut(long index, ByteBuffer data) throws IOException{
     	lowerPersistantArray.put(index, data);
     }
 
-    void transactionDelete(long index) throws IOException{
+    public void transactionDelete(long index) throws IOException{
     	lowerPersistantArray.delete(index);
     }
     
