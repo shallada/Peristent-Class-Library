@@ -1,11 +1,39 @@
 package persistent.collections.Transactions;
 
-public class TransactionStateData
-{
+import java.nio.ByteBuffer;
 
-	public TransactionStateData()
+public class TransactionStateData<E>
+{
+	private boolean deleted;
+	private ByteBuffer data;
+
+	public TransactionStateData(ByteBuffer data, boolean deleted)
 	{
-		// TODO Auto-generated constructor stub
+		setData(data);
+		setDeleted(deleted);
 	}
 
+	ByteBuffer getData() throws DoesNotExistException
+	{
+		if (deleted)
+		{
+			throw new DoesNotExistException();
+		}
+		return data;
+	}
+
+	void setData(ByteBuffer data)
+	{
+		this.data = data;
+	}
+
+	boolean isDeleted()
+	{
+		return deleted;
+	}
+
+	void setDeleted(boolean deleted)
+	{
+		this.deleted = deleted;
+	}
 }
