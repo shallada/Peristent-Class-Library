@@ -62,6 +62,7 @@ public class BTree<E extends Persistable> {
 				//split(currentNode) and set splitNode to the new node
 
 		//return splitNode
+		return null;
 	}
 
 	public void delete(Pair p) {
@@ -94,6 +95,7 @@ public class BTree<E extends Persistable> {
 		//Put newNode in pa
 		//Rewrite n's data
 		//Return newNode
+		return null;
 	}
 
 	private Node nodeDown(Node n, Pair p) {
@@ -102,6 +104,7 @@ public class BTree<E extends Persistable> {
 				//return node at nPair.nextIndex
 			//else if nPair is last pair in n
 				//return node nPair.nextIndex
+		return null;
 	}
 
 	private void paUpdate(Node n) {
@@ -120,6 +123,7 @@ public class BTree<E extends Persistable> {
 	public static <E> int getRecordSize(int numOfNode, E value) {
 		//Node<E> example = new Node<E>(0, numOfNodes, true)
 		//return example.getSize()
+		return 0;
 	}
 
 
