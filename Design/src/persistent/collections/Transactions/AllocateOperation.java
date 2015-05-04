@@ -7,7 +7,7 @@ public class AllocateOperation implements Operation
 
 	private long ref;
     private long nextRef = -1;
-    private TransactionPersistentArray pa;
+    private 	TransactionPersistentArray pa;
     
     public AllocateOperation(TransactionPersistentArray pa, long ref, long nextRe){
         this.ref = ref;
