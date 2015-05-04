@@ -1,11 +1,37 @@
 package persistent.collections.Transactions;
 
+import persistent.collections.TransactionPersistentArray;
+
 public class PutOperation implements Operation
 {
 
-	public PutOperation()
-	{
-		// TODO Auto-generated constructor stub
-	}
+    private long nextRef = -1;
+    private long ref;
+    private ByteArray data;
+    private ByteArray oldData;
+    private TransactionPersistentArray pa;
+    
+    public PutOperation(TransactionPersistentArray pa, long ref, ByteArray data){
+        this.ref = ref;
+        this.pa = pa;
+        this.data = data;
+    }
+    
+    public void execute(){
+        oldData = pa.get(ref);
+        pa.put(ref, data);
+    }
+    
+    public void undo(){
+        pa.put(ref, oldData);
+    }
+    
+    public void setNext(long nextRef){
+        this.nextRef = nextRef;
+    }    
+    
+    long getNext(){
+        return this.nextRef;
+    }
 
 }
