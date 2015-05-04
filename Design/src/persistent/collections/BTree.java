@@ -1,5 +1,7 @@
 package persistent.collections;
 
+import persistent.Persistable;
+
 public class BTree<E extends Persistable> {
 	private final int NODE_CAPACITY;
 	private long numOfNodes;
@@ -123,4 +125,4 @@ public class BTree<E extends Persistable> {
 	}
 
 
- 
+}
