@@ -4,7 +4,7 @@ public class BTree<E extends Persistable> {
 	private final int NODE_CAPACITY;
 	private long numOfNodes;
 	private PersistentArray pa;
-	private Node root;
+	private Node<E> root;
 
 	public BTree(int n, PersistentArray pa) {
 		//Set NODE_CAPACTIY to n + 1, the extra spot acts as a buffer
