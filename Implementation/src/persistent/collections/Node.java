@@ -24,6 +24,7 @@ public class Node<E extends Persistable> implements Persistable {
 
 	public int getSize() {
 		//Long + Boolean + (size of pair * num of pairs)
+		return 0;
 	}
 
 	public ByteBuffer allocate {

@@ -17,10 +17,12 @@ public class Pair<E extends Persistable> implements Persistable{
 
 	public int getSize() {
 		//long + E.getSize() + long + boolean
+		return 0;
 	}
 
 	public ByteBuffer allocate() {
 		//ByteBuffer.allocate(getSize())
+		return null;
 	}
 
 	public void serialize(ByteBuffer buffer) {
