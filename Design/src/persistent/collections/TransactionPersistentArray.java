@@ -107,4 +107,9 @@ public class TransactionPersistentArray implements PersistentArray {
         this.transaction = t;
     }
     
+	public Transaction getTransaction()
+	{
+		return transaction;
+	}
+    
 }
