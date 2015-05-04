@@ -2,7 +2,7 @@ package persistent.collections.Transactions;
 
 import java.nio.ByteBuffer;
 
-public class TransactionStateData<E>
+public class TransactionStateData
 {
 	private boolean deleted;
 	private ByteBuffer data;
