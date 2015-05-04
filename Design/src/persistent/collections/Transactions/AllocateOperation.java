@@ -1,5 +1,7 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
+
 import persistent.collections.TransactionPersistentArray;
 
 public class AllocateOperation implements Operation
@@ -7,7 +9,7 @@ public class AllocateOperation implements Operation
 
 	private long ref;
     private long nextRef = -1;
-    private 	TransactionPersistentArray pa;
+    private TransactionPersistentArray pa;
     
     public AllocateOperation(TransactionPersistentArray pa, long ref, long nextRe){
         this.ref = ref;
@@ -18,7 +20,12 @@ public class AllocateOperation implements Operation
     
     @Override
     public void undo() {
-        pa.transactionDelete(ref);
+        try {
+			pa.transactionDelete(ref);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     @Override
     public void setNext(long nextRef){
