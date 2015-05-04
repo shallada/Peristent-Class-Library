@@ -15,11 +15,13 @@ public class DeleteOperation implements Operation
         this.pa = pa;
     }
 
+    @Override
     public void execute(){
         oldData = pa.get(ref);
         pa.del(ref);
     }
 
+    @Override
     public void undo(){ 
         long testRef = pa.allocate();
         if (testRef != ref){
@@ -28,10 +30,12 @@ public class DeleteOperation implements Operation
         pa.put(ref, oldData);
     }
     
+    @Override
     public void setNext(long nextRef){
         this.nextRef = nextRef;
     }
     
+    @Override
     public long getNext(){
         return this.nextRef;
     }
