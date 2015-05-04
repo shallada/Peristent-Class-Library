@@ -1,0 +1,154 @@
+JBOPA (Just a Bunch of Persistent Arrays
+
+public class JBOPA implements AutoClosable{
+
+	IndexedPA[] PAs;
+
+	/**
+	*	Takes in a variable number of PersistentArrays that are wrapped by the IndexedPA
+	*	class. The IndexedPA needs a maximum number of records a PersistentArray will be allowed to store.
+	*/
+	public static void Create(IndexedPA... PersistentArrays){
+	
+		JBOPA jbop = new JBOPA();
+		jbop.PAs = PersistentArrays;
+		
+		long maxIndex = 0;
+		for(int i = 0; i < PAs.length; i++){
+			PAs[i].order = i;
+			ByteBuffer buffer = PAs[i].PA.getMetadata();
+			buffer.putInt(i);
+			buffer.PutLong(PAs[i].maxRecordCount);
+			PAs[i].PA.persist();
+		}
+	}
+	
+	/**
+	*	Takes in a variable number of Persistent arrays and tries to create a JBOPA from them. 
+	*	I have stored an order variable so that even if the arrays come in out of order, as long as 
+	*	all the arrays are here, I can put them in order.
+	*/
+	public static Open(PA... PersistentArrays){
+		JBOPA jbop = new JBOPA();
+		
+		jbop.PAs = new IndexedPA[PersistentArrays.length];
+		
+		try{
+			for(int i = 0; i < PersistentArrays.length; i++{
+				ByteBuffer buffer = PersistentArrays[i].getMetaData();
+				int index = buffer.ReadInt();
+				long size = buffer.ReadLong();
+				if(PAs[order] != null){
+					throw new DuplicateArguementException("Received two arrays with the same order.");
+				}
+				PAs[order] = new IndexedPA { order = index, maxRecordCount = size, PA = PersistentArrays[i]};
+			}
+		} catch(IndexOutOfBoundsException){
+			throw new InvalidArgumentException("The arrays passed in didn't fit the existing JBOPA")
+		}
+	}
+	
+	public static int GetMetadataSize(){
+		return long.BYTES + int.BYTES;
+	}
+	
+	public void persistMetadata(){
+		PAs[0].PA.persistMetadata();
+	}
+	
+	public ByteBuffer getMetadata(){
+		return PAs[0].PA.getMetaData();
+	}
+	
+	/**
+	*	Returns the current size of the contained PersistentArrays
+	*/
+	public long getRecordCount(){
+		long size = 0;
+		foreach(IndexedPA in PAs){
+			size += IndexedPA.PA.getSize();
+		}
+		return size;
+	}
+	
+	/**
+	*	Returns a ByteBuffer containing the record located at the index. The JBOPA will call the get on the appropriate PA
+	*/
+	public ByteBuffer Get(long index){
+		ByteBuffer item = null;
+		long IndexOffset = 0;
+		for(int i = 0; i < PAs.length; i++){
+			if(index < PAs.maxRecordCount + IndexOffset){
+				int PAIndex = index - IndexOffset;
+				item = PAs[i].PA.Get(PAIndex);
+				break;
+			}
+			IndexOffset += PAs[i].maxRecordSize;
+		}
+		
+		return item;
+	}
+	
+	/**
+	*	Takes an index and ByteBuffer, and puts the ByteBuffer in the appropriate PA at the PA's index
+	*/
+	public void Put(long index, ByteBuffer buffer){
+		long IndexOffset = 0;
+		
+		for(int i = 0; i < PAs.length; i++){
+			if(index < PAs.maxRecordCount + IndexOffset){
+				int PAIndex = index - IndexOffset;
+				item = PAs[i].PA.Put(PAIndex, buffer);
+				break;
+			}
+			IndexOffset += PAs[i].maxRecordSize;
+		}
+	}
+
+	public long Allocate(){
+		long index = -1;
+		for(int i = 0; i < PAs.length; i++){
+			if(PAs[i].PA.getSize() < IndexPA[i].maxRecordCount){
+				index = IndexPA[i].PA.Allocate();
+				break;
+			}
+		}
+		if(index == -1){
+			throw new OutOfStorageException();
+		}
+		
+		return index;		
+	}
+	
+	public void delete(long index){
+		long IndexOffset = 0;
+
+		for(int i = 0; i < PAs.length; i++){
+			if(index < PAs.maxRecordCount + IndexOffset){
+				int PAIndex = index - IndexOffset;
+				item = PAs[i].PA.delete(PAIndex);
+				break;
+			}
+			IndexOffset += PAs[i].maxRecordSize;
+		}
+	}
+	
+	public void close(){
+		foreach(IndexedPA in IndexedPA{
+			IndexedPA.PA.close();
+		}
+	}
+	
+}
+
+public class IndexedPA{
+	
+	int order;
+	long maxRecordCount;
+	PersistentArray PA;
+	
+	public IndexedPA(PersistentArray PA, long maxRecordCount){
+		this.PA = PA;
+		this.maxRecordCount = maxRecordCount;
+	}
+}
