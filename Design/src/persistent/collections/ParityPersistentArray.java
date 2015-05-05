@@ -20,6 +20,8 @@ public class ParityPersistentArray implements PersistentArray{
 		return PAA[(int) (getHiddenIndex(index)%PAA.length)]
 			.get(getHiddenIndex(index)/PAA.length);
 	}
+	
+	
 
 	public long allocate() throws IOException{
 		// whichArray = Find PA with the lowest size
@@ -38,15 +40,11 @@ public class ParityPersistentArray implements PersistentArray{
 	}
 
 	public void put(long index, ByteBuffer buffer) throws IOException{
-		// PAA[getHiddenIndex(index)%PAA.length]
-		//	.put(getHiddenIndex(index)/PAA.length, buffer);
 		PAA[(int) (getHiddenIndex(index)%PAA.length)]
 				.put(getHiddenIndex(index)/PAA.length, buffer);
 	}
 
 	public void delete(long index) throws IOException{
-		// PAA[getHiddenIndex(index)%PAA.length]
-		//	.delete(getHiddenIndex(index)/PAA.length);
 		PAA[(int) (getHiddenIndex(index)%PAA.length)]
 				.delete(getHiddenIndex(index)/PAA.length);
 	}
