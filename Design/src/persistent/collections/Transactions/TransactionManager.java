@@ -1,57 +1,78 @@
 package persistent.collections.Transactions;
 
+import java.util.Iterator;
+import java.util.UUID;
+
+import persistent.collections.PersistentArray;
+import persistent.collections.dictionary.PersistentDictionary;
+
 public class TransactionManager
 {
-
 	PersistentArray operationsLog;
-    PersistentHashmap<UUID, TransactionMetaData> transactionLog = new PersistentHashmap<UUID, Transaction>();
-    
-    public TransactionManager(PersistenArray operationsLog){
-        this.operationsLog = operationsLog;
-    }
-    
-    public Transaction getTransaction(){
-        return new Transaction(this);
-    }
+	PersistentDictionary<UUID, TransactionMetaData> transactionLog;// = new PersistentDictionary<UUID, TransactionMetaData>(operationsLog, null, null);
 
-    public void commitPhaseOne(UUID transactionId, Iterator<Operation> itr, int operationCount){
-        long firstOp = writeOperations(Iterator<Operation> itr) // potential issue, storing metadata after operations written to log
-        transactionLog.put(transactionID, new TransactionMetaData(firstOp, operationCount));
-        transactionLog.get(transactionID).setPhaseOneCommitted(true);    
-       }
+	public TransactionManager(PersistentArray operationsLog)
+	{
+		this.operationsLog = operationsLog;
+	}
 
-    public long writeOperations (Iterator<Operation> ops){
+	public Transaction getTransaction()
+	{
+		return new Transaction(this);
+	}
 
-        synchronized(operationsLog) {
-            long firstRef = operationsLog.allocate();
-            operationsLog.put(firstRef, ops.next());
-            long prev = firstRef;
-            while(ops.hasNext()) {
-                long ref = operationsLog.allocate();
-                operationsLog.put(ref, ops.next());
-                prev.setNext(prev);
-                prev = ref;
-            }
-        }
-        return firstRef;
-    }
+	public void commitPhaseOne(UUID transactionId, Iterator<Operation> itr, int operationCount)
+	{
+		long firstOp = writeOperations(itr); // potential
+																	// issue,
+																	// storing
+																	// metadata
+																	// after
+																	// operations
+																	// written
+																	// to log
+		transactionLog.put(transactionId, new TransactionMetaData(firstOp, operationCount));
+		transactionLog.get(transactionId).setPhaseOneCommitted(true);
+	}
 
-    public void commitPhaseTwo(UUID transactionId){
-        transactionLog.get(transactionId).setPhaseTwoCommitted(true);
-        deleteTransaction(transactionId);
-        
-    }
-    
-    private void deleteTransaction(UUID transactionId){
-        long currentRef = transactionLog.get(transactionID).getFirstRef();
-        while(transactionLog.get(transactionID).getFirstRef() != -1){
-            transactionLog.get(transactionID).setFirstRef(operationsLog.get(currentRef).getNext());
-            operationsLog.delete(currentRef);
-            currentRef = transactionLog.get(transactionID).getFirstRef();
-        }
-    }
-    
-    
-    // Periodically compact operations log by removing transactions that are phase two completed.
+	public long writeOperations(Iterator<Operation> ops)
+	{
+		long firstRef = 0;
+		synchronized (operationsLog)
+		{
+			firstRef = operationsLog.allocate();
+			operationsLog.put(firstRef, ops.next());
+			long prev = firstRef;
+			while (ops.hasNext())
+			{
+				long ref = operationsLog.allocate();
+				operationsLog.put(ref, ops.next());
+				operationsLog.get(prev).setNext(ref);
+				prev = ref;
+			}
+		}
+		return firstRef;
+	}
+
+	public void commitPhaseTwo(UUID transactionId)
+	{
+		transactionLog.get(transactionId).setPhaseTwoCommitted(true);
+		deleteTransaction(transactionId);
+
+	}
+
+	private void deleteTransaction(UUID transactionId)
+	{
+		long currentRef = transactionLog.get(transactionId).getFirstRef();
+		while (transactionLog.get(transactionId).getFirstRef() != -1)
+		{
+			transactionLog.get(transactionId).setFirstRef(operationsLog.get(currentRef).getNext());
+			operationsLog.delete(currentRef);
+			currentRef = transactionLog.get(transactionId).getFirstRef();
+		}
+	}
+
+	// Periodically compact operations log by removing transactions that are
+	// phase two completed.
 
 }
