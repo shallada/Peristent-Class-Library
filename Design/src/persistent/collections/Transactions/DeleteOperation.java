@@ -23,13 +23,11 @@ public class DeleteOperation implements Operation
         try {
 			oldData = pa.get(ref);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         try {
 			pa.delete(ref);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }

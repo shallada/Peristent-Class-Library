@@ -51,11 +51,11 @@ public class Transaction
 	}
 
 	public void commit() {
-        txnManager.commitPhaseOne(transactionID, operations.getIterator(), new int operationCount);
+		transactionManager.commitPhaseOne(transactionID, operations.getIterator(), operationCount);
         writeToDisk();
-        txnManager.commitPhaseTwo(transactionID);
-        for(TransactionalPeristentArray xpa : registeredArrays) {
-            p.setTransaction(null);
+        transactionManager.commitPhaseTwo(transactionID);
+        for(TransactionPersistentArray xpa : registeredArrays) {
+            xpa.setTransaction(null);
         }
     }
 
@@ -73,7 +73,7 @@ public class Transaction
 	public void rollback(Operation operation){
         for(Operation op : operations){
             while(!operation.equals(op)){
-                op.undo()
+                op.undo();
             }
         }
     }
