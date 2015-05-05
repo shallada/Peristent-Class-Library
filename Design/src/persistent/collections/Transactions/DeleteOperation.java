@@ -5,52 +5,42 @@ import java.nio.ByteBuffer;
 
 import persistent.collections.TransactionPersistentArray;
 
-public class DeleteOperation implements Operation
-{
+public class DeleteOperation implements Operation {
 
-    private long nextRef = -1;
-    private long ref;
-    private TransactionPersistentArray pa;
-    private ByteBuffer oldData;
-    
-    public DeleteOperation(TransactionPersistentArray pa, long ref){
-        this.ref = ref;
-        this.pa = pa;
-    }
+	private long nextRef = -1;
+	private long ref;
+	private TransactionPersistentArray pa;
+	private ByteBuffer oldData;
 
-    @Override
-    public void execute(){
-        try {
-			oldData = pa.get(ref);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public DeleteOperation(TransactionPersistentArray pa, long ref) {
+		this.ref = ref;
+		this.pa = pa;
+	}
+
+	@Override
+	public void execute() throws IOException {
+		oldData = pa.get(ref);
+		pa.delete(ref);
+	}
+
+	@Override
+	public void undo() throws RollbackInterruptedException, IOException {
+		long testRef = pa.allocate();
+		if (testRef != ref) {
+			throw new RollbackInterruptedException(
+					"Someone external allocated during your transaction.");
 		}
-        try {
-			pa.delete(ref);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
+		pa.put(ref, oldData);
+	}
 
-    @Override
-    public void undo() throws rollbackInterruptedException{ 
-        long testRef = pa.allocate();
-        if (testRef != ref){
-            throw new rollbackInterruptedException();
-        }
-        pa.put(ref, oldData);
-    }
-    
-    @Override
-    public void setNext(long nextRef){
-        this.nextRef = nextRef;
-    }
-    
-    @Override
-    public long getNext(){
-        return this.nextRef;
-    }
+	@Override
+	public void setNext(long nextRef) {
+		this.nextRef = nextRef;
+	}
+
+	@Override
+	public long getNext() {
+		return this.nextRef;
+	}
 
 }

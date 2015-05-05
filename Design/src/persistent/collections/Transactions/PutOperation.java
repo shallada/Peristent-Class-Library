@@ -20,26 +20,14 @@ public class PutOperation implements Operation {
 	}
 
 	@Override
-	public void execute() {
-		try {
-			oldData = pa.get(ref);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			pa.put(ref, data);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void execute() throws IOException {
+		oldData = pa.get(ref);
+		pa.put(ref, data);
 	}
 
 	@Override
-	public void undo() {
-		try {
-			pa.put(ref, oldData);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void undo() throws IOException {
+		pa.put(ref, oldData);
 	}
 
 	@Override
