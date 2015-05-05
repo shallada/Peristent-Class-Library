@@ -23,7 +23,6 @@ public class AllocateOperation implements Operation
         try {
 			pa.transactionDelete(ref);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }

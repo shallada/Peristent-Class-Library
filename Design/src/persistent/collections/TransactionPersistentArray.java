@@ -72,15 +72,14 @@ public class TransactionPersistentArray implements PersistentArray {
 	@Override
 	public void close() throws IOException
 	{
-		// TODO Auto-generated method stub
+		lowerPersistantArray.close();
 		
 	}
 	
 	@Override
 	public long getRecordCount()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return lowerPersistantArray.getRecordCount();
 	}
 	
 	@Override

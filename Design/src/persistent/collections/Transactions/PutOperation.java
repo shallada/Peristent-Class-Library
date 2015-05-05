@@ -24,13 +24,11 @@ public class PutOperation implements Operation {
 		try {
 			oldData = pa.get(ref);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			pa.put(ref, data);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -40,7 +38,6 @@ public class PutOperation implements Operation {
 		try {
 			pa.put(ref, oldData);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

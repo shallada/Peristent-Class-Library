@@ -1,11 +1,13 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
+import persistent.collections.dictionary.PersistentDictionary;
 
 public class Transaction
 {
@@ -15,7 +17,7 @@ public class Transaction
 	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>);
+	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>();
 
 	public Transaction(TransactionManager manager)
 	{
@@ -85,7 +87,7 @@ public class Transaction
 	public void txnStatePut(long index, ByteBuffer data)
 	{
 		TransactionStateData put = new TransactionStateData(data, false);
-		TransactionState.put(index, put);
+		transactionState.put(index, put);
 	}
 
 	public void txnStateDel(long index)
@@ -97,7 +99,7 @@ public class Transaction
 	public ByteBuffer get(long reference) {
         TransactionStateData data = transactionState.get(reference)
         if(data.isDeleted()){
-            throw new deletedException();
+            throw new IOException();
         }
         return data.getData();
     }}
