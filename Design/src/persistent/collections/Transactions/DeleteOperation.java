@@ -35,7 +35,7 @@ public class DeleteOperation implements Operation
     }
 
     @Override
-    public void undo(){ 
+    public void undo() throws rollbackInterruptedException{ 
         long testRef = pa.allocate();
         if (testRef != ref){
             throw new rollbackInterruptedException();
