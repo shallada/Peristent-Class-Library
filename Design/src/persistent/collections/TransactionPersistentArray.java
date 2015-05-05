@@ -3,6 +3,10 @@ package persistent.collections;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import persistent.collections.Transactions.AllocateOperation;
+import persistent.collections.Transactions.DeleteOperation;
+import persistent.collections.Transactions.Operation;
+import persistent.collections.Transactions.PutOperation;
 import persistent.collections.Transactions.Transaction;
 
 public class TransactionPersistentArray implements PersistentArray {
@@ -17,8 +21,8 @@ public class TransactionPersistentArray implements PersistentArray {
 		ref = lowerPersistantArray.allocate();
 		if(transaction != null)
 		{
-			//add allocate command
-			//add to cache
+			Operation allocateOp = new AllocateOperation(this, ref);
+			transaction.addOperation(allocateOp);
 		}
 		return ref;
 	}
@@ -28,9 +32,9 @@ public class TransactionPersistentArray implements PersistentArray {
 	{
 		if(transaction != null)
 		{
-			//add delete command
-			//add or update cache
-			//transaction.txnStateDelete(index);
+			Operation allocateOp = new DeleteOperation(this, index);
+			transaction.addOperation(allocateOp);
+			transaction.txnStateDel(index);
 		}
 		else
 		{
@@ -42,7 +46,7 @@ public class TransactionPersistentArray implements PersistentArray {
 	@Override
 	public ByteBuffer get(long index) throws IOException
 	{
-		ByteBuffer data = null;// = transaction.get(index);
+		ByteBuffer data = transaction.get(index);
 		if(data == null)
 		{
 			lowerPersistantArray.get(index);
@@ -55,9 +59,9 @@ public class TransactionPersistentArray implements PersistentArray {
 	{
 		if(transaction != null)
 		{
-			//add put command
-			//add or update cache
-			//transaction.txnStatePut(ref, data);
+			Operation allocateOp = new PutOperation(this, index, buffer);
+			transaction.addOperation(allocateOp);
+			transaction.txnStatePut(index, buffer);
 		}		
 		else
 		{

@@ -11,7 +11,7 @@ public class AllocateOperation implements Operation
     private long nextRef = -1;
     private TransactionPersistentArray pa;
     
-    public AllocateOperation(TransactionPersistentArray pa, long ref, long nextRe){
+    public AllocateOperation(TransactionPersistentArray pa, long ref){
         this.ref = ref;
         this.pa = pa;
     }

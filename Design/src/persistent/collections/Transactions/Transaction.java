@@ -12,12 +12,10 @@ public class Transaction
 	int operationCount = 0;
 	TransactionManager transactionManager;
 	UUID transactionID;
-	PersistentArray operations;// = new PersistentArray();
+	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	// PersistentHashTable<Long, TransactionStateData<ByteBuffer>>
-	// transactionState;// = new PersistentHashTable<Long,
-	// TransactionStateData<ByteArray>>);
+	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>);
 
 	public Transaction(TransactionManager manager)
 	{
@@ -25,7 +23,7 @@ public class Transaction
 		// transactionID = new UUID();
 	}
 
-	void registerArrays(ArrayList<TransactionPersistentArray> arrays)
+	public void registerArrays(ArrayList<TransactionPersistentArray> arrays)
 	{
 		for (TransactionPersistentArray xpa : arrays)
 		{
@@ -33,12 +31,12 @@ public class Transaction
 		}
 	}
 
-	void registerArray(TransactionPersistentArray array)
+	public void registerArray(TransactionPersistentArray array)
 	{
 		registeredArrays.add(array);
 	}
 
-	void start()
+	public void start()
 	{
 		for (TransactionPersistentArray xpa : registeredArrays)
 		{
@@ -50,7 +48,7 @@ public class Transaction
 		}
 	}
 
-	void commit() {
+	public void commit() {
         txnManager.commitPhaseOne(transactionID, operations.getIterator(), new int operationCount);
         writeToDisk();
         txnManager.commitPhaseTwo(transactionID);
@@ -59,10 +57,10 @@ public class Transaction
         }
     }
 
-	void writeToDisk() {
+	public void writeToDisk() {
         for(Operation op : operations){
             try{
-                op.do();
+                op.execute();
             } catch(Exception e){
                 rollback(op);
                 throw new TransactionFailedException();
@@ -70,7 +68,7 @@ public class Transaction
         }
     }
 
-	void rollback(Operation operation){
+	public void rollback(Operation operation){
         for(Operation op : operations){
             while(!operation.equals(op)){
                 op.undo()
@@ -78,28 +76,27 @@ public class Transaction
         }
     }
 
-	void addOperation(Operation op)
+	public void addOperation(Operation op)
 	{
 		operationCount++;
 		operations.put(op);
-		// cache changes
 	}
 
-	void txnStatePut(long index, ByteArray data)
+	public void txnStatePut(long index, ByteBuffer data)
 	{
-		transactionStateData put = new transactionStateData(data, false);
-		transactionState.put(index, put);
+		TransactionStateData put = new TransactionStateData(data, false);
+		TransactionState.put(index, put);
 	}
 
-	void txnStateDel(long index)
+	public void txnStateDel(long index)
 	{
-		transactionStateData del = new transactionStateData(null, true);
+		TransactionStateData del = new TransactionStateData(null, true);
 		transactionState.put(index, del);
 	}
 
-	E get(long reference) {
-        transactionStateData data = transactionState.get(reference)
-        if(data.isDeleted){
+	public ByteBuffer get(long reference) {
+        TransactionStateData data = transactionState.get(reference)
+        if(data.isDeleted()){
             throw new deletedException();
         }
         return data.getData();
