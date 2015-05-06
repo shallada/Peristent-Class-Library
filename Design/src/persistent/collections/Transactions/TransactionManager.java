@@ -1,10 +1,13 @@
-package persistent.collections.Transactions;
+package src.persistent.collections.Transactions;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 
 import persistent.collections.PersistentArray;
+import persistent.collections.Transactions.Operation;
+import persistent.collections.Transactions.Transaction;
+import persistent.collections.Transactions.TransactionMetaData;
 import persistent.collections.dictionary.PersistentDictionary;
 
 public class TransactionManager

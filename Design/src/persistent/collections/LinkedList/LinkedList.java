@@ -1,7 +1,17 @@
 package linked_list;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import javax.sql.rowset.Predicate;
+
+import persistent.Persistable;
+import persistent.collections.PersistentArray;
+
 public class LinkedList<T extends Persistable> implements Iterable<T> {
-	private PersistantArray pa;
+	private PersistentArray pa;
 	private long head;
 	private long count;
 	private ByteBuffer metadata;

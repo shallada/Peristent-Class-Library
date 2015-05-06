@@ -24,4 +24,28 @@ public class PutOperation extends Operation {
 	public void undo(TransactionPersistentArray txnpa) throws IOException {
 		txnpa.put(this.getRef(), this.getOldData());
 	}
+
+	@Override
+	public ByteBuffer allocate() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void load(ByteBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void serialize(ByteBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

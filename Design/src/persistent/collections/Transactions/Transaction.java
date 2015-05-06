@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import persistent.collections.BasePersistentArray;
-import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
+import persistent.collections.LinkedList.LinkedList;
+import persistent.collections.Transactions.MultipleTransactionException;
+import persistent.collections.Transactions.Operation;
+import persistent.collections.Transactions.TransactionManager;
+import persistent.collections.Transactions.TransactionStateData;
 import persistent.collections.dictionary.PersistentDictionary;
 import persistent.collections.dictionary.PersistentFactory;
 
@@ -16,7 +20,7 @@ public class Transaction {
 	private String transactionStatePath = "/transactions/";
 	private TransactionManager transactionManager;
 	private UUID transactionID;
-	private PersistentArray operations;
+	private LinkedList<Operation> operations;
 	private ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
 	PersistentDictionary<Long, TransactionStateData> transactionState;
@@ -52,7 +56,7 @@ public class Transaction {
 
 	public void commit() {
 		transactionManager.commitPhaseOne(transactionID,
-				operations.getIterator(), operationCount); //// not sure how to do this?
+				operations.iterator(), operationCount); //// not sure how to do this?
 		writeToDisk();
 		transactionManager.commitPhaseTwo(transactionID);
 		for (TransactionPersistentArray xpa : registeredArrays) {
@@ -61,7 +65,7 @@ public class Transaction {
 	}
 
 	public void writeToDisk() {
-		for (Operation op : operations) { //// not sure how to do this?
+		for (Operation op : operations) {
 			try {
 				op.execute(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			} catch (IOException e) {
@@ -72,7 +76,7 @@ public class Transaction {
 	}
 
 	public void rollback(Operation operation) {
-		for (Operation op : operations) { //// not sure how to do this?
+		for (Operation op : operations) {
 			while (!operation.equals(op)) {
 				op.undo(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			}

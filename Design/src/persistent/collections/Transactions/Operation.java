@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import persistent.Persistable;
 import persistent.collections.TransactionPersistentArray;
 
-public abstract class Operation
+public abstract class Operation implements Persistable
 {
 	private long nextRef = -1;
 	private long ref;
@@ -14,8 +15,8 @@ public abstract class Operation
 	private ByteBuffer oldData;
 	private UUID transactionPersistentArrayId;
 	
-    abstract void execute(TransactionPersistentArray txnpa) throws IOException;
-    abstract void undo(TransactionPersistentArray txnpa) throws IOException, RollbackInterruptedException;
+    public abstract void execute(TransactionPersistentArray txnpa) throws IOException;
+    public abstract void undo(TransactionPersistentArray txnpa) throws IOException, RollbackInterruptedException;
     
 	public long getNextRef()
 	{
