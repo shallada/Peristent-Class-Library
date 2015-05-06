@@ -1,5 +1,6 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class TransactionStateData
@@ -13,11 +14,11 @@ public class TransactionStateData
 		setDeleted(deleted);
 	}
 
-	ByteBuffer getData() throws DoesNotExistException
+	ByteBuffer getData() throws IOException
 	{
 		if (deleted)
 		{
-			throw new DoesNotExistException();
+			throw new IOException();
 		}
 		return data;
 	}

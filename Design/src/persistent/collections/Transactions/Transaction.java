@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import persistent.collections.BasePersistentArray;
 import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
 import persistent.collections.dictionary.PersistentDictionary;
@@ -18,7 +19,10 @@ public class Transaction
 	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>(new PersistentArray(), new PersistentFactory<Long>(), new PersistentFactory<TransactionStateData>());
+	PersistentDictionary<Long, TransactionStateData> transactionState = 
+			new PersistentDictionary<Long, TransactionStateData>(
+					new BasePersistentArray(), new PersistentFactory<Long>(),
+					new PersistentFactory<TransactionStateData>());
 
 	public Transaction(TransactionManager manager)
 	{
@@ -103,4 +107,26 @@ public class Transaction
             throw new IOException();
         }
         return data.getData();
-    }}
+    }
+	
+	private class LongFactory implements PersistentFactory<Long> {
+
+		@Override
+		public Long fromBuffer(ByteBuffer data) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void toBuffer(ByteBuffer buffer, Long obj) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public int sizeInBytes() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+	}
+}
