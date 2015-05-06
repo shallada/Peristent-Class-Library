@@ -1,5 +1,7 @@
 package persistent.collections;
 
+import java.nio.ByteBuffer;
+
 public class Node<E extends Persistable> implements Persistable {
 	private Pair<E>[] pairs;
 	private long index;
