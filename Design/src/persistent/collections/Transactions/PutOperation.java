@@ -8,10 +8,10 @@ import persistent.collections.TransactionPersistentArray;
 
 public class PutOperation extends Operation {
 
-	public PutOperation(UUID paId, long ref, ByteBuffer data) {
-		this.setRef(ref);
-		this.setTransactionPersistentArrayId(paId);
+	public PutOperation(UUID paId, long ref, long recordSize, ByteBuffer data) {
+		super(ref, recordSize, paId);
 		this.setData(data);
+		this.setOldData(ByteBuffer.allocate((int)recordSize));
 	}
 
 	@Override
@@ -23,29 +23,5 @@ public class PutOperation extends Operation {
 	@Override
 	public void undo(TransactionPersistentArray txnpa) throws IOException {
 		txnpa.put(this.getRef(), this.getOldData());
-	}
-
-	@Override
-	public ByteBuffer allocate() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getSize() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void load(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void serialize(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-		
 	}
 }

@@ -8,9 +8,10 @@ import persistent.collections.TransactionPersistentArray;
 
 public class DeleteOperation extends Operation {
 
-	public DeleteOperation(UUID paId, long ref) {
-		this.setRef(ref);
-		this.setTransactionPersistentArrayId(paId);
+	public DeleteOperation(UUID paId, long ref, long recordSize) {
+		super(ref, recordSize, paId);
+		this.setData(ByteBuffer.allocate((int)recordSize));
+		this.setOldData(ByteBuffer.allocate((int)recordSize));
 	}
 
 	@Override
@@ -27,29 +28,5 @@ public class DeleteOperation extends Operation {
 					"Someone external allocated during your transaction.");
 		}
 		txnpa.put(getRef(), getOldData());
-	}
-
-	@Override
-	public ByteBuffer allocate() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getSize() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void load(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void serialize(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-		
 	}
 }
