@@ -18,9 +18,11 @@ public class Transaction {
 	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	PersistentDictionary<Long, TransactionStateData> transactionState = new PersistentDictionary<Long, TransactionStateData>(
-			new BasePersistentArray(), new PersistentFactory<Long>(),
-			new PersistentFactory<TransactionStateData>());
+	PersistentDictionary<Long, TransactionStateData> transactionState = 
+			new PersistentDictionary<Long, TransactionStateData>(
+					new BasePersistentArray(), new PersistentFactory<Long>(),
+					new PersistentFactory<TransactionStateData>());
+
 
 	public Transaction(TransactionManager manager) {
 		this.transactionManager = manager;
@@ -97,4 +99,25 @@ public class Transaction {
         }
         return data.getData();
     }
+	
+	private class LongFactory implements PersistentFactory<Long> {
+
+		@Override
+		public Long fromBuffer(ByteBuffer data) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void toBuffer(ByteBuffer buffer, Long obj) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public int sizeInBytes() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+	}
 }
