@@ -16,17 +16,20 @@ public interface PersistentArray
         /**
          * Returns an index that can be used for the next row
          * @return the index of the allocated space
+         * @throws IOException if there is a failure in the IO system
          */
         long allocate() throws IOException;
 
         /**
          * Persists the current metadata and closes the data
+         * @throws IOException if there is a failure in the IO system
          */
         void close() throws IOException;
 
         /**
          * Removes the bytes at the index
          * @param index the index of the bytes to remove
+         * @throws IOException if there is a failure in the IO system
          */
         void delete(long index) throws IOException;
 
@@ -34,6 +37,8 @@ public interface PersistentArray
          * Gets the bytes at the index
          * @param index the index of the bytes
          * @return bytes that are stored at the index
+         * @throws IndexOutOfBoundsException if the index is out of bounds
+         * @throws IOException if there is a failure in the IO system
          */
         ByteBuffer get(long index) throws IOException;
 
@@ -41,6 +46,9 @@ public interface PersistentArray
          * Puts the bytes at the index
          * @param index the index of the bytes
          * @param buffer a buffer of bytes to store
+         * @throws IndexOutOfBoundsException if the index is out of bounds
+         * @throws IllegalArgumentException if the buffer is not the correct length
+         * @throws IOException if there is a failure in the IO system
          */
         void put(long index, ByteBuffer buffer) throws IOException;
 
@@ -56,12 +64,14 @@ public interface PersistentArray
          *   class will start storing data.  The limit and capacity are both set to the total metadata size
          *   minus the relative position
          * @return a bytebuffer pointing into the shared metadata space.
+         * @throws IOException if there is a failure in the IO system
          */
         ByteBuffer getMetadata() throws IOException;
 
         /**
          * Copies the instance defined metadata fields into the metadata buffer and calls the persist method
          *   on any subclasses, resulting in the buffer being written into the persisted file.
+         * @throws IOException if there is a failure in the IO system
          */
         void persistMetadata() throws IOException;
 }
