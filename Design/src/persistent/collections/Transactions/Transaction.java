@@ -8,6 +8,7 @@ import java.util.UUID;
 import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
 import persistent.collections.dictionary.PersistentDictionary;
+import persistent.collections.dictionary.PersistentFactory;
 
 public class Transaction
 {
@@ -17,7 +18,7 @@ public class Transaction
 	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>();
+	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>(new PersistentArray(), new PersistentFactory<Long>(), new PersistentFactory<TransactionStateData>());
 
 	public Transaction(TransactionManager manager)
 	{
