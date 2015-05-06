@@ -78,7 +78,7 @@ public class Transaction {
 			}
 		}
 	}
-
+	
 	public void addOperation(Operation op) throws IOException {
 		operationCount++;
 		long index = operations.allocate();
