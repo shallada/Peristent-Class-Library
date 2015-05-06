@@ -1,8 +1,8 @@
 package persistent.collections;
 
 import persistent.data.BaseBlockFile;
+import persistent.data.MdFileTemp;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -11,11 +11,11 @@ public class BasePersistentArray
         implements PersistentArray
 {
     protected static int ourMetadataSize =
-                    Long.BYTES // nextIndex
+            Long.BYTES // nextIndex
                     + Integer.BYTES // recordSize
                     + Long.BYTES // recordCount
                     + Long.BYTES; // deleteIndex
-    // long deleteIndex;
+    long deleteIndex;
 
     /**
      * Returns the number of bytes the implementation will need to pass to the factory
@@ -31,88 +31,114 @@ public class BasePersistentArray
     /**
      * Returns an index that can be used for the next row
      * @return the index of the allocated space
+     * @throws IOException if there is a failure in the IO system
      */
     @Override
     public long allocate() throws IOException
     {
-        // set temp returnValue
-        // if deleteIndex is less than 0
-        //      set returnValue to nextIndex
-        //      increment NextIndex
-
-        // else deleteIndex is greater than or equal to 0
-        // get the bytes at deleteIndex
-        // set bytes position (in bytebuffer) to 0
-
-        // set returnValue to deleteIndex
-        // set deleteIndex to bytes.readlong.  this will set the deleteIndex to the value stored in the previous deleteIndex
-
-        // persist metadata
-        // return returnvalue
-        return 0;
+        long returnValue;
+        if (deleteIndex < 0)
+        {
+            returnValue = nextIndex++;
+        }
+        else {
+            ByteBuffer buffer = get(deleteIndex);
+            buffer.position(0);
+            returnValue = deleteIndex;
+            deleteIndex = buffer.getLong(); // this will set the deleteIndex to the value stored in the previous deleteIndex
+        }
+        persistMetadata();
+        return returnValue;
     }
 
     /**
      * Removes the bytes at the index
      * @param index the index of the bytes to remove
+     * @throws IndexOutOfBoundsException if the index is out of bounds
+     * @throws IOException if there is a failure in the IO system
      */
     @Override
     public void delete(long index) throws IOException
     {
-        // allocate a byteBuffer of record size
-        // write the delete index to the bytebuffer at position 0
-        // put bytebuffer at index
-        // update deleteIndex to be index
-        // persist metadata
+        if (index < 0 || index >= nextIndex)
+            throw new IndexOutOfBoundsException();
+
+        ByteBuffer buffer = ByteBuffer.allocate(recordSize);
+        buffer.position(0);
+        buffer.putLong(deleteIndex);
+        put(index, buffer);
+        deleteIndex = index;
+        persistMetadata();
     }
 
+    /**
+     * Creates a BasePersistentArray instance
+     * @param path the location for create the file
+     * @param mdSize the size to allocate for super class metadata
+     * @param recordSize the size of a record
+     * @throws IOException if there is a failure in the IO system
+     */
     public static void create(String path, int mdSize, int recordSize) throws IOException
     {
-        // make instance of BasePersistentArray
-        // set mdSize to be (mdsizePassedIn + mdSizeForBaseBlockFile)
-        // Create MdFile with path and mdsize
-        // set BasePersistentArray internal data file to mdfile
-        // call BasePersistentArray's getMetadata to initialize internal md
-
-        // set BasePersistentArray internal nextIndex to 0
-        // set BasePersistentArray internal recordSize to recordSize
-        // set BasePersistentArray internal recordCount to 0
-        // set BasePersistentArray internal deleteIndex to -1
-        // call BasePersistentArray's persistMetadata to save md
-        // close BasePersistentArray
-        //
+        BasePersistentArray bpa = new BasePersistentArray();
+        MdFileTemp.create(path, mdSize + ourMetadataSize);
+        bpa.data = MdFileTemp.open(path);
+        bpa.nextIndex = 0;
+        bpa.recordSize = recordSize;
+        bpa.recordCount = 0;
+        bpa.deleteIndex = -1;
+        bpa.metadata = bpa.getMetadata();
+        bpa.persistMetadata();
+        bpa.close();
     }
 
+    /**
+     * Opens a BasePersistentArray that has been saved to the specified path
+     * @param path the path of the file
+     * @return an instance of BasePersistentArray that has been loaded from a file
+     * @throws IOException if there is a failure in the IO system
+     */
     public static BasePersistentArray open(String path) throws IOException
     {
-        // make instance of BasePersistentArray
-        // open MdFile at path
-        // set BasePersistentArray internal data to mdfile
-        // call BasePersistentArray's getMetadata to load md
-        // return BasePersistentArray
-        return null;
+        BasePersistentArray bpa = new BasePersistentArray();
+        bpa.data = MdFileTemp.open(path);
+        bpa.metadata = bpa.getMetadata();
+        return bpa;
     }
 
+    /**
+     * Gets a ByteBuffer reference with access to bytes of the metadata remaining after this object
+     *   in the metadata.  The buffer has the position set to 0 which is the location the the parent
+     *   class will start storing data.  The limit and capacity are both set to the total metadata size
+     *   minus the relative position
+     * @return a bytebuffer pointing into the shared metadata space.
+     * @throws IOException if there is a failure in the IO system
+     */
+    @Override
     public ByteBuffer getMetadata() throws IOException
     {
-        // get metadata bytebuffer from data file
-        // set internal metadata to metadata buffer
-        // read nextIndex from metadata
-        // read recordSize from metadata
-        // read recordCount from metadata
-        // read deleteIndex from metadata
-        // return new ByteBuffer instance sliced from the current position (ready for our parent)
-        return null;
+        metadata = data.getMetadata();
+        nextIndex = metadata.getLong();
+        recordSize = metadata.getInt();
+        recordCount = metadata.getLong();
+        deleteIndex = metadata.getLong();
+        return metadata.slice();
     }
 
+    /**
+     * Copies the instance defined metadata fields into the metadata buffer and calls the persist method
+     *   on any subclasses, resulting in the buffer being written into the persisted file.
+     * @throws IOException if there is a failure in the IO system
+     */
+    @Override
     public void persistMetadata() throws IOException
     {
-        // set metadata position to 0
-        // write nextIndex to metadata
-        // write recordSize to metadata
-        // write recordCount to metadata
-        // read deleteIndex from metadata
-        // call persistMetadata on data file
+        metadata.position(0);
+        metadata.putLong(nextIndex);
+        metadata.putInt(recordSize);
+        metadata.putLong(recordCount);
+        metadata.putLong(deleteIndex);
+        data.persistMetadata();
     }
 
 }
