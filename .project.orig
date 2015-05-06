@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
+	<name>Peristent-Class-Library</name>
+=======
 	<name>PersistentArray</name>
+>>>>>>> 05be4ccba6c007cf470468d5f7f835438178ed79
 	<comment></comment>
 	<projects>
 	</projects>

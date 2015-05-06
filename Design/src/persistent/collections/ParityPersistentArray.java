@@ -21,8 +21,6 @@ public class ParityPersistentArray implements PersistentArray{
 			.get(getHiddenIndex(index)/PAA.length);
 	}
 	
-	
-
 	public long allocate() throws IOException{
 		// whichArray = Find PA with the lowest size
 		// long index = Call allocate on that array
@@ -34,9 +32,29 @@ public class ParityPersistentArray implements PersistentArray{
 				smallest = i;
 		}
 		
-		long index = PAA[smallest].allocate();
-		long outwardIndex = getPublicIndex(PAA.length*index+smallest);
+		long row = PAA[smallest].allocate();
+		
+		if(row%PAA.length == smallest){
+			return allocate();
+		}
+		
+		long outwardIndex = getPublicIndex(PAA.length*row+smallest);
 		return outwardIndex;
+	}
+	
+	public void calculateParityForRow(long row) throws IOException{
+		ByteBuffer parity = null;
+		ByteBuffer xor = null;
+		for(int i = 0; i < PAA.length; i++){
+			if(row%PAA.length == i){
+				// This is the parity
+				try{
+					parity = PAA[i].get(row);					
+				} catch (Exception e){
+					
+				}
+			}
+		}
 	}
 
 	public void put(long index, ByteBuffer buffer) throws IOException{
