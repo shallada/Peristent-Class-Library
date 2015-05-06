@@ -25,9 +25,9 @@ public class BTree<E extends Persistable> {
 	}
 
 	public void add(Pair p) {
-		//Node n = insert(p)
-		//If n is not null
-			//Create new Node (newRoot)
+		Node n = insert(p);
+		if(n!=null){
+			Node newRoot = new Node();
 			//Create Pair with the Key being the highest key in the root node and the value being a reference to root node (kv1)
 			//Create Pair with the Key being the higest key in Node n and the value being a reference to Node n (kv2)
 			//Add kv1 into newRoot
@@ -36,6 +36,8 @@ public class BTree<E extends Persistable> {
 			//Put the newRoot in pa
 			//writeMetaData()
 			//Set root to newRoot
+		}
+
 	}
 
 	private Node insert(Pair p) {

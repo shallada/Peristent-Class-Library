@@ -46,4 +46,36 @@ public class Pair<E extends Persistable> implements Persistable{
 		//else
 			//call load on value
 	}
+
+	public long getKey() {
+		return key;
+	}
+
+	public void setKey(long key) {
+		this.key = key;
+	}
+
+	public E getValue() {
+		return value;
+	}
+
+	public void setValue(E value) {
+		this.value = value;
+	}
+
+	public long getNextIndex() {
+		return nextIndex;
+	}
+
+	public void setNextIndex(long nextIndex) {
+		this.nextIndex = nextIndex;
+	}
+
+	public boolean isHasNextIndex() {
+		return hasNextIndex;
+	}
+
+	public void setHasNextIndex(boolean hasNextIndex) {
+		this.hasNextIndex = hasNextIndex;
+	}
 }
