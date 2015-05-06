@@ -1,5 +1,9 @@
 package persistent.collections;
 
+import persistent.Persistable;
+
+import java.nio.ByteBuffer;
+
 public class BTree<E extends Persistable> {
 	private final int NODE_CAPACITY;
 	private long numOfNodes;
@@ -7,12 +11,12 @@ public class BTree<E extends Persistable> {
 	private Node<E> root;
 
 	public BTree(int n, PersistentArray pa) {
-		//Set NODE_CAPACTIY to n + 1, the extra spot acts as a buffer
-		//Set pa
-		//Create and set root node
-		//Allocate space in pa
-		//Write root node to pa in allocated space
-		//writeMetaData()
+		this.NODE_CAPACITY = n+1;
+		this.pa = pa;
+		root = new Node(0,NODE_CAPACITY, true);
+		//ByteBuffer buffer = pa.allocate();
+		//root.Serialize(buffer);
+		writeMetaData();
 	}
 
 	public void add(long key, E value) {
@@ -125,6 +129,4 @@ public class BTree<E extends Persistable> {
 		//return example.getSize()
 		return 0;
 	}
-
-
- 
+}
