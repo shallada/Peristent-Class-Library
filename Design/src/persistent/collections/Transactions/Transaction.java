@@ -64,7 +64,7 @@ public class Transaction {
 		}
 	}
 
-	public void writeToDisk() {
+	public void writeToDisk(){
 		for (Operation op : operations) {
 			try {
 				op.execute(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));

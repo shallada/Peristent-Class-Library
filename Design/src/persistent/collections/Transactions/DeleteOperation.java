@@ -9,7 +9,7 @@ import persistent.collections.TransactionPersistentArray;
 public class DeleteOperation extends Operation {
 
 	public DeleteOperation(UUID paId, long ref) {
-		this.setRef(ref);
+		this.setRef(ref);	
 		this.setTransactionPersistentArrayId(paId);
 	}
 
