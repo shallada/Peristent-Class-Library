@@ -54,7 +54,7 @@ public class Transaction {
 		}
 	}
 
-	public void commit() {
+	public void commit() throws IOException, RollbackInterruptedException {
 		transactionManager.commitPhaseOne(transactionID,
 				operations.iterator(), operationCount); //// not sure how to do this?
 		writeToDisk();
@@ -64,7 +64,7 @@ public class Transaction {
 		}
 	}
 
-	public void writeToDisk(){
+	public void writeToDisk() throws IOException, RollbackInterruptedException {
 		for (Operation op : operations) {
 			try {
 				op.execute(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
@@ -75,7 +75,7 @@ public class Transaction {
 		}
 	}
 
-	public void rollback(Operation operation) {
+	public void rollback(Operation operation) throws IOException, RollbackInterruptedException {
 		for (Operation op : operations) {
 			while (!operation.equals(op)) {
 				op.undo(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
@@ -85,11 +85,7 @@ public class Transaction {
 	
 	public void addOperation(Operation op) throws IOException {
 		operationCount++;
-		long index = operations.allocate();
-		OperationFactory factory = new OperationFactory();
-		ByteBuffer bb = ByteBuffer.allocate(factory.sizeInBytes());
-		factory.toBuffer(bb, op);
-		operations.put(index, bb);
+		operations.addToEnd(op);
 	}
 
 	public void txnStatePut(long index, ByteBuffer data) {
@@ -123,28 +119,6 @@ public class Transaction {
 	}
 	
 	//implement these. -------------------------------------------
-	
-	private class OperationFactory implements PersistentFactory<Operation>{
-
-		@Override
-		public Operation fromBuffer(ByteBuffer data) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void toBuffer(ByteBuffer buffer, Operation obj) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public int sizeInBytes() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-	}
 
 	private class LongFactory implements PersistentFactory<Long> {
 
@@ -184,7 +158,6 @@ public class Transaction {
 			{
 				e.printStackTrace();
 			}
-
 		}
 
 		@Override

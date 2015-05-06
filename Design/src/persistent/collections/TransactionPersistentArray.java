@@ -100,7 +100,7 @@ public class TransactionPersistentArray implements PersistentArray
 	{
 		ByteBuffer bb = lowerPersistentArray.getMetadata();
 		this.recordSize = bb.getLong();
-		return bb;
+		return bb.slice();
 	}
 
 	@Override
