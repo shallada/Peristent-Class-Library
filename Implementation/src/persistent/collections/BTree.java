@@ -129,6 +129,4 @@ public class BTree<E extends Persistable> {
 		//return example.getSize()
 		return 0;
 	}
-
-
- 
+}
