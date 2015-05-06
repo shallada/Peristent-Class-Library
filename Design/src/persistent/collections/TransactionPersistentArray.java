@@ -12,13 +12,22 @@ import persistent.collections.Transactions.Transaction;
 public class TransactionPersistentArray implements PersistentArray {
 
     private Transaction transaction;
-    private PersistentArray lowerPersistantArray;
+    private PersistentArray lowerPersistentArray;
+    private long recordSize;
+    
+    protected static int ourMetadataSize = Long.BYTES;
+    
+    public TransactionPersistentArray(PersistentArray lowerPersistentArray, long recordSize){
+    	this.lowerPersistentArray = lowerPersistentArray;
+    	this.recordSize = recordSize;
+    }
+    
     
     @Override
 	public long allocate() throws IOException
 	{
 		long ref;
-		ref = lowerPersistantArray.allocate();
+		ref = lowerPersistentArray.allocate();
 		if(transaction != null)
 		{
 			Operation allocateOp = new AllocateOperation(this, ref);
@@ -38,7 +47,7 @@ public class TransactionPersistentArray implements PersistentArray {
 		}
 		else
 		{
-			lowerPersistantArray.delete(index);
+			lowerPersistentArray.delete(index);
 		}
 		
 	}
@@ -49,7 +58,7 @@ public class TransactionPersistentArray implements PersistentArray {
 		ByteBuffer data = transaction.get(index);
 		if(data == null)
 		{
-			lowerPersistantArray.get(index);
+			lowerPersistentArray.get(index);
 		}
 		return data;
 	}
@@ -65,45 +74,49 @@ public class TransactionPersistentArray implements PersistentArray {
 		}		
 		else
 		{
-			lowerPersistantArray.put(index, buffer);
+			lowerPersistentArray.put(index, buffer);
 		}
 	}
 	
 	@Override
 	public void close() throws IOException
 	{
-		lowerPersistantArray.close();
+		lowerPersistentArray.close();
 		
 	}
 	
 	@Override
 	public long getRecordCount()
 	{
-		return lowerPersistantArray.getRecordCount();
+		return lowerPersistentArray.getRecordCount();
 	}
 	
 	@Override
 	public ByteBuffer getMetadata() throws IOException
 	{
-		return lowerPersistantArray.getMetadata();
+		ByteBuffer bb = lowerPersistentArray.getMetadata();
+		this.recordSize = bb.getLong();
+		return bb;
 	}
 	
 	@Override
 	public void persistMetadata() throws IOException
 	{
-		lowerPersistantArray.persistMetadata();
+		ByteBuffer bb = lowerPersistentArray.getMetadata();
+		bb.putLong(recordSize);
+		lowerPersistentArray.persistMetadata();
 	}
 	
 	public long transactionAllocate() throws IOException {
-        return lowerPersistantArray.allocate();
+        return lowerPersistentArray.allocate();
     }
 
     public void transactionPut(long index, ByteBuffer data) throws IOException{
-    	lowerPersistantArray.put(index, data);
+    	lowerPersistentArray.put(index, data);
     }
 
     public void transactionDelete(long index) throws IOException{
-    	lowerPersistantArray.delete(index);
+    	lowerPersistentArray.delete(index);
     }
     
     public void setTransaction(Transaction t){
@@ -115,4 +128,7 @@ public class TransactionPersistentArray implements PersistentArray {
 		return transaction;
 	}
     
+	public long getRecordSize(){
+		return this.recordSize;
+	}
 }

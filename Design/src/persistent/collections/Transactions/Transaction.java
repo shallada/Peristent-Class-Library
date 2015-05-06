@@ -5,46 +5,41 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import persistent.collections.BasePersistentArray;
 import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
 import persistent.collections.dictionary.PersistentDictionary;
 import persistent.collections.dictionary.PersistentFactory;
 
-public class Transaction
-{
+public class Transaction {
 	int operationCount = 0;
 	TransactionManager transactionManager;
 	UUID transactionID;
 	PersistentArray operations;
 	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
-	PersistentDictionary<Long, TransactionStateData>  transactionState = new PersistentDictionary<Long, TransactionStateData>(new PersistentArray(), new PersistentFactory<Long>(), new PersistentFactory<TransactionStateData>());
+	PersistentDictionary<Long, TransactionStateData> transactionState = new PersistentDictionary<Long, TransactionStateData>(
+			new BasePersistentArray(), new PersistentFactory<Long>(),
+			new PersistentFactory<TransactionStateData>());
 
-	public Transaction(TransactionManager manager)
-	{
+	public Transaction(TransactionManager manager) {
 		this.transactionManager = manager;
 		// transactionID = new UUID();
 	}
 
-	public void registerArrays(ArrayList<TransactionPersistentArray> arrays)
-	{
-		for (TransactionPersistentArray xpa : arrays)
-		{
+	public void registerArrays(ArrayList<TransactionPersistentArray> arrays) {
+		for (TransactionPersistentArray xpa : arrays) {
 			registeredArrays.add(xpa);
 		}
 	}
 
-	public void registerArray(TransactionPersistentArray array)
-	{
+	public void registerArray(TransactionPersistentArray array) {
 		registeredArrays.add(array);
 	}
 
-	public void start()
-	{
-		for (TransactionPersistentArray xpa : registeredArrays)
-		{
-			if (xpa.getTransaction() != null)
-			{
+	public void start() {
+		for (TransactionPersistentArray xpa : registeredArrays) {
+			if (xpa.getTransaction() != null) {
 				// throw exception about xpa already having a transaction
 			}
 			xpa.setTransaction(this);
@@ -52,47 +47,45 @@ public class Transaction
 	}
 
 	public void commit() {
-		transactionManager.commitPhaseOne(transactionID, operations.getIterator(), operationCount);
-        writeToDisk();
-        transactionManager.commitPhaseTwo(transactionID);
-        for(TransactionPersistentArray xpa : registeredArrays) {
-            xpa.setTransaction(null);
-        }
-    }
+		transactionManager.commitPhaseOne(transactionID,
+				operations.getIterator(), operationCount);
+		writeToDisk();
+		transactionManager.commitPhaseTwo(transactionID);
+		for (TransactionPersistentArray xpa : registeredArrays) {
+			xpa.setTransaction(null);
+		}
+	}
 
 	public void writeToDisk() {
-        for(Operation op : operations){
-            try{
-                op.execute();
-            } catch(Exception e){
-                rollback(op);
-                throw new TransactionFailedException();
-            }
-        }
-    }
+		for (Operation op : operations) {
+			try {
+				op.execute();
+			} catch (Exception e) {
+				rollback(op);
+				throw new TransactionFailedException();
+			}
+		}
+	}
 
-	public void rollback(Operation operation){
-        for(Operation op : operations){
-            while(!operation.equals(op)){
-                op.undo();
-            }
-        }
-    }
+	public void rollback(Operation operation) {
+		for (Operation op : operations) {
+			while (!operation.equals(op)) {
+				op.undo();
+			}
+		}
+	}
 
-	public void addOperation(Operation op)
-	{
+	public void addOperation(Operation op) {
 		operationCount++;
 		operations.put(op);
 	}
 
-	public void txnStatePut(long index, ByteBuffer data)
-	{
+	public void txnStatePut(long index, ByteBuffer data) {
 		TransactionStateData put = new TransactionStateData(data, false);
 		transactionState.put(index, put);
 	}
 
-	public void txnStateDel(long index)
-	{
+	public void txnStateDel(long index) {
 		TransactionStateData del = new TransactionStateData(null, true);
 		transactionState.put(index, del);
 	}
@@ -103,4 +96,5 @@ public class Transaction
             throw new IOException();
         }
         return data.getData();
-    }}
+    }
+}
