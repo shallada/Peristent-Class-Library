@@ -20,7 +20,7 @@ public class ParityPersistentArray implements PersistentArray{
 		return PAA[(int) (getHiddenIndex(index)%PAA.length)]
 			.get(getHiddenIndex(index)/PAA.length);
 	}
-	
+
 	public long allocate() throws IOException{
 		// whichArray = Find PA with the lowest size
 		// long index = Call allocate on that array
@@ -32,37 +32,21 @@ public class ParityPersistentArray implements PersistentArray{
 				smallest = i;
 		}
 		
-		long row = PAA[smallest].allocate();
-		
-		if(row%PAA.length == smallest){
-			return allocate();
-		}
-		
-		long outwardIndex = getPublicIndex(PAA.length*row+smallest);
+		long index = PAA[smallest].allocate();
+		long outwardIndex = getPublicIndex(PAA.length*index+smallest);
 		return outwardIndex;
-	}
-	
-	public void calculateParityForRow(long row) throws IOException{
-		ByteBuffer parity = null;
-		ByteBuffer xor = null;
-		for(int i = 0; i < PAA.length; i++){
-			if(row%PAA.length == i){
-				// This is the parity
-				try{
-					parity = PAA[i].get(row);					
-				} catch (Exception e){
-					
-				}
-			}
-		}
 	}
 
 	public void put(long index, ByteBuffer buffer) throws IOException{
+		// PAA[getHiddenIndex(index)%PAA.length]
+		//	.put(getHiddenIndex(index)/PAA.length, buffer);
 		PAA[(int) (getHiddenIndex(index)%PAA.length)]
 				.put(getHiddenIndex(index)/PAA.length, buffer);
 	}
 
 	public void delete(long index) throws IOException{
+		// PAA[getHiddenIndex(index)%PAA.length]
+		//	.delete(getHiddenIndex(index)/PAA.length);
 		PAA[(int) (getHiddenIndex(index)%PAA.length)]
 				.delete(getHiddenIndex(index)/PAA.length);
 	}
