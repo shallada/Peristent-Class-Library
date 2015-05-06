@@ -40,7 +40,7 @@ public class Transaction {
 	public void registerArray(TransactionPersistentArray array) {
 		registeredArrays.add(array);
 	}
-
+	
 	public void start() throws MultipleTransactionException {
 		for (TransactionPersistentArray xpa : registeredArrays) {
 			if (xpa.getTransaction() != null) {
@@ -63,7 +63,7 @@ public class Transaction {
 	public void writeToDisk() {
 		for (Operation op : operations) { //// not sure how to do this?
 			try {
-				op.execute();
+				op.execute(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			} catch (IOException e) {
 				rollback(op);
 				throw new IOException();
@@ -74,7 +74,7 @@ public class Transaction {
 	public void rollback(Operation operation) {
 		for (Operation op : operations) { //// not sure how to do this?
 			while (!operation.equals(op)) {
-				op.undo();
+				op.undo(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			}
 		}
 	}
@@ -98,13 +98,25 @@ public class Transaction {
 		transactionState.put(index, del);
 	}
 
-	public ByteBuffer get(long reference) {
-        TransactionStateData data = transactionState.get(reference)
+	public ByteBuffer get(long reference) throws IOException {
+        TransactionStateData data = transactionState.get(reference);
         if(data.isDeleted()){
             throw new IOException();
         }
         return data.getData();
     }
+	
+	private TransactionPersistentArray findTransactionPersistentArrayById(UUID id)
+	{
+		for(int i = 0; i < registeredArrays.size(); i++)
+		{
+			if(registeredArrays.get(i).getId() == id)
+			{
+				return registeredArrays.get(i);
+			}
+		}
+		return null;
+	}
 	
 	//implement these. -------------------------------------------
 	
@@ -134,20 +146,17 @@ public class Transaction {
 
 		@Override
 		public Long fromBuffer(ByteBuffer data) {
-			// TODO Auto-generated method stub
-			return null;
+			return data.getLong();
 		}
 
 		@Override
 		public void toBuffer(ByteBuffer buffer, Long obj) {
-			// TODO Auto-generated method stub
-
+			buffer.putLong(obj);
 		}
 
 		@Override
 		public int sizeInBytes() {
-			// TODO Auto-generated method stub
-			return 0;
+			return Long.BYTES;
 		}
 	}
 
@@ -156,20 +165,27 @@ public class Transaction {
 
 		@Override
 		public TransactionStateData fromBuffer(ByteBuffer data) {
-			// TODO Auto-generated method stub
-			return null;
+			boolean deleted = (data.get() == 1);
+			return new TransactionStateData(data.slice(), deleted);
 		}
 
 		@Override
 		public void toBuffer(ByteBuffer buffer, TransactionStateData obj) {
-			// TODO Auto-generated method stub
+			buffer.put((byte)(obj.isDeleted() ? 1 : 0));
+			try
+			{
+				buffer.put(obj.getData());
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 
 		}
 
 		@Override
 		public int sizeInBytes() {
-			// TODO Auto-generated method stub
-			return 0;
+			return 1;
 		}
 
 	}

@@ -1,46 +1,30 @@
 package persistent.collections.Transactions;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.UUID;
 
 import persistent.collections.TransactionPersistentArray;
 
-public class DeleteOperation implements Operation {
+public class DeleteOperation extends Operation {
 
-	private long nextRef = -1;
-	private long ref;
-	private TransactionPersistentArray pa;
-	private ByteBuffer oldData;
-
-	public DeleteOperation(TransactionPersistentArray pa, long ref) {
-		this.ref = ref;
-		this.pa = pa;
+	public DeleteOperation(UUID paId, long ref) {
+		this.setRef(ref);
+		this.setTransactionPersistentArrayId(paId);
 	}
 
 	@Override
-	public void execute() throws IOException {
-		oldData = pa.get(ref);
-		pa.delete(ref);
+	public void execute(TransactionPersistentArray txnpa) throws IOException {
+		setOldData(txnpa.get(getRef()));
+		txnpa.delete(getRef());
 	}
 
 	@Override
-	public void undo() throws RollbackInterruptedException, IOException {
-		long testRef = pa.allocate();
-		if (testRef != ref) {
+	public void undo(TransactionPersistentArray txnpa) throws RollbackInterruptedException, IOException {
+		long testRef = txnpa.allocate();
+		if (testRef != getRef()) {
 			throw new RollbackInterruptedException(
 					"Someone external allocated during your transaction.");
 		}
-		pa.put(ref, oldData);
+		txnpa.put(getRef(), getOldData());
 	}
-
-	@Override
-	public void setNext(long nextRef) {
-		this.nextRef = nextRef;
-	}
-
-	@Override
-	public long getNext() {
-		return this.nextRef;
-	}
-
 }

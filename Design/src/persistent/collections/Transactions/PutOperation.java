@@ -2,42 +2,26 @@ package persistent.collections.Transactions;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.UUID;
 
 import persistent.collections.TransactionPersistentArray;
 
-public class PutOperation implements Operation {
+public class PutOperation extends Operation {
 
-	private long nextRef = -1;
-	private long ref;
-	private ByteBuffer data;
-	private ByteBuffer oldData;
-	private TransactionPersistentArray pa;
-
-	public PutOperation(TransactionPersistentArray pa, long ref, ByteBuffer data) {
-		this.ref = ref;
-		this.pa = pa;
-		this.data = data;
+	public PutOperation(UUID paId, long ref, ByteBuffer data) {
+		this.setRef(ref);
+		this.setTransactionPersistentArrayId(paId);
+		this.setData(data);
 	}
 
 	@Override
-	public void execute() throws IOException {
-		oldData = pa.get(ref);
-		pa.put(ref, data);
+	public void execute(TransactionPersistentArray txnpa) throws IOException {
+		this.setOldData(txnpa.get(this.getRef()));
+		txnpa.put(this.getRef(), this.getData());
 	}
 
 	@Override
-	public void undo() throws IOException {
-		pa.put(ref, oldData);
+	public void undo(TransactionPersistentArray txnpa) throws IOException {
+		txnpa.put(this.getRef(), this.getOldData());
 	}
-
-	@Override
-	public void setNext(long nextRef) {
-		this.nextRef = nextRef;
-	}
-
-	@Override
-	public long getNext() {
-		return this.nextRef;
-	}
-
 }

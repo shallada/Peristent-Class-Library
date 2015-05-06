@@ -1,37 +1,22 @@
 package persistent.collections.Transactions;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import persistent.collections.TransactionPersistentArray;
 
-public class AllocateOperation implements Operation {
+public class AllocateOperation extends Operation {
 
-	private long ref;
-	private long nextRef = -1;
-	private TransactionPersistentArray pa;
-
-	public AllocateOperation(TransactionPersistentArray pa, long ref) {
-		this.ref = ref;
-		this.pa = pa;
+	public AllocateOperation(UUID paId, long ref) {
+		this.setRef(ref);
+		this.setTransactionPersistentArrayId(paId);
 	}
 
-	public void execute() {
+	public void execute(TransactionPersistentArray txnpa) {
 	}
 
 	@Override
-	public void undo() throws IOException {
-		pa.transactionDelete(ref);
-
+	public void undo(TransactionPersistentArray txnpa) throws IOException {
+		txnpa.transactionDelete(this.getRef());
 	}
-
-	@Override
-	public void setNext(long nextRef) {
-		this.nextRef = nextRef;
-	}
-
-	@Override
-	public long getNext() {
-		return this.nextRef;
-	}
-
 }

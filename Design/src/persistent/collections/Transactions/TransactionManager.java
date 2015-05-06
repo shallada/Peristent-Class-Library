@@ -1,5 +1,6 @@
 package persistent.collections.Transactions;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class TransactionManager
 		this.operationsLog = operationsLog;
 	}
 
-	public Transaction getTransaction()
+	public Transaction getTransaction() throws IOException
 	{
 		return new Transaction(this);
 	}
