@@ -56,7 +56,7 @@ public class Transaction {
 
 	public void commit() throws IOException, RollbackInterruptedException {
 		transactionManager.commitPhaseOne(transactionID,
-				operations.iterator(), operationCount); //// not sure how to do this?
+				operations.iterator(), operationCount);
 		writeToDisk();
 		transactionManager.commitPhaseTwo(transactionID);
 		for (TransactionPersistentArray xpa : registeredArrays) {
@@ -117,8 +117,6 @@ public class Transaction {
 		}
 		return null;
 	}
-	
-	//implement these. -------------------------------------------
 
 	private class LongFactory implements PersistentFactory<Long> {
 
@@ -140,6 +138,7 @@ public class Transaction {
 
 	private class TransactionStateDataFactory implements
 			PersistentFactory<TransactionStateData> {
+		int booleanSize = 1;
 
 		@Override
 		public TransactionStateData fromBuffer(ByteBuffer data) {
@@ -162,7 +161,7 @@ public class Transaction {
 
 		@Override
 		public int sizeInBytes() {
-			return 1;
+			return booleanSize;
 		}
 
 	}
