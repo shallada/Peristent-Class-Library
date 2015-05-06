@@ -14,10 +14,10 @@ import persistent.collections.dictionary.PersistentFactory;
 public class Transaction {
 	private int operationCount = 0;
 	private String transactionStatePath = "/transactions/";
-	TransactionManager transactionManager;
-	UUID transactionID;
-	PersistentArray operations;
-	ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
+	private TransactionManager transactionManager;
+	private UUID transactionID;
+	private PersistentArray operations;
+	private ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
 	PersistentDictionary<Long, TransactionStateData> transactionState;
 
