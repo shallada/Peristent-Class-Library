@@ -7,9 +7,14 @@ public class Pair<E extends Persistable> implements Persistable{
 	private boolean hasNextIndex; //Needed so that when we load the data, if nextIndex = 0 
 				      //we know whether or not 0 represents a lack of data or a reference
 
-	/*
-	Constructors (Parameterless and one that sets key, value, nextIndex)
-	*/
+	public Pair(){
+
+	}
+
+	public Pair(long key, E value){
+		this.key = key;
+		this.value = value;
+	}
 
 	/*
 	Getters and setters

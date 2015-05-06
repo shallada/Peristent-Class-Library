@@ -20,8 +20,8 @@ public class BTree<E extends Persistable> {
 	}
 
 	public void add(long key, E value) {
-		//create new Pair(key, value)
-		//call add(Pair p) with new Pair
+		Pair<E> pair = new Pair<E>(key, value);
+		add(pair);
 	}
 
 	public void add(Pair p) {
