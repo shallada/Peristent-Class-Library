@@ -160,7 +160,7 @@ public class JBOPA implements PersistentArray{
 		long PAIndex = -1;
 		PersistentArray selectedPA = null;
 		
-		for(int i = 0; i < PAs.length; i++){
+		for(int i = 0; i <= PAs.length; i++){
 			if(startIndex < PAs[i].getMaxRecordCount() + IndexOffset){
 				PAIndex = startIndex - IndexOffset;
 				selectedPA = PAs[i].getPA();
