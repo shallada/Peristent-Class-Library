@@ -9,6 +9,16 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import javax.sql.rowset.Predicate;
+
+import persistent.Persistable;
+import persistent.collections.PersistentArray;
+
 public class LinkedList<T extends Persistable> implements Iterable<T> {
 	private PersistentArray pa;
 	private long head;

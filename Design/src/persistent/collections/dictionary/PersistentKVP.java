@@ -23,6 +23,7 @@ public class PersistentKVP<K, V> {
 	}
 	
 	public PersistentKVP(ByteBuffer data, PersistentFactory<K> keyFactory, PersistentFactory<V> valueFactory) {
+		data.position(0);
 		this.keyFactory = keyFactory;
 		this.valueFactory = valueFactory;
 		key = keyFactory.fromBuffer(data);
@@ -48,13 +49,17 @@ public class PersistentKVP<K, V> {
 	
 	public ByteBuffer toBytes() {
 		ByteBuffer buffer = null;
+		int size = 8 + keyFactory.sizeInBytes() + valueFactory.sizeInBytes();
+		buffer = ByteBuffer.allocate(size);
 		if( next != EMPTY) {
-			int size = 8 + keyFactory.sizeInBytes() + valueFactory.sizeInBytes();
-			buffer = ByteBuffer.allocate(size);
 			keyFactory.toBuffer(buffer, key);
 			valueFactory.toBuffer(buffer, value);
-			buffer.putLong(next);
 		}
+		else {
+			buffer.position(keyFactory.sizeInBytes() + valueFactory.sizeInBytes());
+		}
+		buffer.putLong(next);
+		buffer.flip();
 		return buffer;
 	}
 
