@@ -7,13 +7,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import persistent.collections.PersistentArray;
-
-public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<PersistentKVP<K, V>>{
+public class PersistentDictionary<K, V> implements Iterable<PersistentKVP<K, V>>,  Map<K, V> {
 	private PersistentArray persistentArray;
 	private PersistentDictionaryMetadata metadata;
 	private PersistentFactory<K> keyFactory;
 	private PersistentFactory<V> valueFactory;
+	public int count = 0;
 	
 	/**
 	 * Creates a Persistent dictionary with buckets number of buckets
@@ -24,7 +23,10 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 	 * @throws IOException
 	 */
 	public PersistentDictionary(PersistentArray pa, PersistentFactory<K> keyFactory, PersistentFactory<V> valueFactory, long buckets) throws IOException {
+		this.keyFactory = keyFactory;
+		this.valueFactory = valueFactory;
 		persistentArray = pa;
+		metadata = new PersistentDictionaryMetadata(persistentArray.getMetadata());
 		initialize(buckets);
 	}
 	
@@ -36,7 +38,10 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 	 * @throws IOException
 	 */
 	public PersistentDictionary(PersistentArray pa, PersistentFactory<K> keyFactory, PersistentFactory<V> valueFactory) throws IOException {
+		this.keyFactory = keyFactory;
+		this.valueFactory = valueFactory;
 		persistentArray = pa;
+		metadata = new PersistentDictionaryMetadata(persistentArray.getMetadata());
 		if(pa.getRecordCount() == 0) {
 			initialize(10000);
 		}
@@ -49,12 +54,13 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 	 */
 	private void initialize(long buckets) throws IOException {
 		assert(persistentArray.getRecordCount() == 0);
-
-		metadata = new PersistentDictionaryMetadata(persistentArray.getMetadata());
 		metadata.buckets = buckets;
-		PersistentKVP<K, V> empty = new PersistentKVP<K, V>(null, null, null, null);
+		PersistentKVP<K, V> empty = new PersistentKVP<K, V>(null, null, keyFactory, valueFactory);
 		for(int i = 0; i < buckets; i++) {
-			persistentArray.allocate();
+			long index = persistentArray.allocate();
+			if(index != i) {
+				throw new RuntimeException();
+			}
 			persistentArray.put(i, empty.toBytes());
 		}
 	}
@@ -104,6 +110,7 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 			long next = bucket.getNext();
 			
 			if(bucket.isEmpty()) {
+				metadata.incrementEntries();
 				persistentArray.put(index, kvpToAdd.toBytes());
 			}
 			else {
@@ -122,13 +129,19 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 				}
 				// if bucket wasn't found, make one at index
 				if(!inserted) {
-					long insertIndex = persistentArray.allocate();
+					long insertIndex;
+					if(key.equals(bucket.getKey())) {
+						insertIndex = index;
+					}
+					else {
+						metadata.incrementEntries();
+						insertIndex = persistentArray.allocate();
+					}
 					bucket.setNext(insertIndex);
 					persistentArray.put(index, bucket.toBytes());
 					persistentArray.put(insertIndex, kvpToAdd.toBytes());
 				}
 			}
-			metadata.incrementEntries();
 			metadata.persist();
 			persistentArray.persistMetadata();
 			return value;
@@ -168,6 +181,12 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 				if(bucket.getKey().equals(key)) {
 					value = remove(bucket, prevBucket, index, prevIndex);
 				}
+				else {
+					count++;
+				}
+			}
+			else {
+				count++;
 			}
 			return value;
 		}
@@ -178,20 +197,41 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 	
 	private V remove(PersistentKVP<K, V> bucket, PersistentKVP<K, V> prevBucket, long index, long prevIndex) throws IOException {
 		V value = bucket.getValue();
-		persistentArray.delete(index);
+		if(value == null) {
+			count++;
+		}
 		
 		// connect previous bucket to next bucket
-		if(!bucket.isEndOfList()) {
-			prevBucket.setNext(bucket.getNext());
-			persistentArray.put(prevIndex, prevBucket.toBytes());
-			
-			metadata.decrementEntries();
-			metadata.persist();
-			persistentArray.persistMetadata();
+		if(bucket.isEndOfList()) {
+
+			if(prevBucket == null) {
+				bucket.setNext(PersistentKVP.EMPTY);
+				persistentArray.put(index, bucket.toBytes());
+			}
+			else {
+				persistentArray.delete(index);
+				prevBucket.setNext(PersistentKVP.END_OF_LIST);
+				persistentArray.put(prevIndex, prevBucket.toBytes());
+			}
 		}
 		else {
-			prevBucket.setNext(PersistentKVP.END_OF_LIST);
+			if(prevBucket == null) {
+				
+				persistentArray.put(index, persistentArray.get(bucket.getNext()));
+				persistentArray.delete(bucket.getNext());
+				
+			}
+			else {
+
+				persistentArray.delete(index);
+				prevBucket.setNext(bucket.getNext());
+				persistentArray.put(prevIndex, prevBucket.toBytes());
+			}
 		}
+		
+		metadata.decrementEntries();
+		metadata.persist();
+		persistentArray.persistMetadata();
 		return value;
 	}
 
@@ -303,7 +343,7 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 						next = null;
 					}
 					else {
-						nextIndex = bucket;
+						nextIndex = ++bucket;
 					}
 				}
 				else {
@@ -315,7 +355,19 @@ public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<Persisten
 					next = new PersistentKVP<K, V>(data, keyFactory, valueFactory);
 				}
 			} 
-			while(next.isEmpty() && bucket < metadata.buckets - 1);
+			while(next != null && next.isEmpty() && bucket < metadata.buckets - 1);
+			if(next == null) {
+				int a = 5;
+			}
+			if(next.isEndOfList()) {
+				if(bucket == metadata.buckets - 1) {
+					next = null;
+				}
+				else {
+					nextIndex = ++bucket;
+				}
+			}
+			String a = "debug";
 		}
 
 		@Override
