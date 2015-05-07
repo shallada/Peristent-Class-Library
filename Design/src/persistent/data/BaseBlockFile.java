@@ -3,12 +3,11 @@ package persistent.data;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class BaseBlockFile implements BlockFile
-{
-    protected static int ourMetadataSize =
-            Long.BYTES // nextIndex
-                    + Integer.BYTES // recordSize
-                    + Long.BYTES; // recordCount
+public class BaseBlockFile implements BlockFile {
+    protected static int ourMetadataSize
+            = Long.BYTES // nextIndex
+            + Integer.BYTES // recordSize
+            + Long.BYTES; // recordCount
     protected long nextIndex;
     protected int recordSize;
     protected long recordCount;
@@ -17,23 +16,23 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Returns the number of bytes the implementation will need to pass to the factory
-     *   to ensure enough metadata space
+     * to ensure enough metadata space
+     *
      * @return the number of bytes the implementation will need to pass to the factory
-     *   to ensure enough metadata space
+     * to ensure enough metadata space
      */
-    public static int getMdSize()
-    {
+    public static int getMdSize() {
         return ourMetadataSize;
     }
 
     /**
      * Returns an index that can be used for the next row
+     *
      * @return the index of the allocated space
      * @throws IOException if there is a failure in the IO system
      */
     @Override
-    public long allocate() throws IOException
-    {
+    public long allocate() throws IOException {
         long tempIndex = nextIndex++;
         recordCount++;
         persistMetadata();
@@ -42,14 +41,14 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Gets the bytes at the index
+     *
      * @param index the index of the bytes
      * @return bytes that are stored at the index
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @throws IOException if there is a failure in the IO system
+     * @throws IOException               if there is a failure in the IO system
      */
     @Override
-    public ByteBuffer get(long index) throws IOException
-    {
+    public ByteBuffer get(long index) throws IOException {
         if (index < 0 || index >= nextIndex)
             throw new IndexOutOfBoundsException();
 
@@ -61,7 +60,7 @@ public class BaseBlockFile implements BlockFile
         int bytesRead = data.read(buffer);
 
         // make sure we read the number of bytes that we should have
-        assert(bytesRead == recordSize);
+        assert (bytesRead == recordSize);
         // then flip it
         buffer.flip();
         return buffer;
@@ -69,15 +68,15 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Puts the bytes at the index
-     * @param index the index of the bytes
+     *
+     * @param index  the index of the bytes
      * @param buffer a buffer of bytes to store
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @throws IllegalStateException if the buffer is not the correct length
-     * @throws IOException if there is a failure in the IO system
+     * @throws IllegalStateException     if the buffer is not the correct length
+     * @throws IOException               if there is a failure in the IO system
      */
     @Override
-    public void put(long index, ByteBuffer buffer) throws IOException
-    {
+    public void put(long index, ByteBuffer buffer) throws IOException {
         if (index < 0 || index >= nextIndex)
             throw new IndexOutOfBoundsException();
 
@@ -94,23 +93,23 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Gets the number of persisted items
+     *
      * @return the number of persisted items
      */
     @Override
-    public long getRecordCount()
-    {
+    public long getRecordCount() {
         return recordCount;
     }
 
     /**
      * Creates a BaseBlockFile instance
-     * @param path the location for create the file
-     * @param mdSize the size to allocate for super class metadata
+     *
+     * @param path       the location for create the file
+     * @param mdSize     the size to allocate for super class metadata
      * @param recordSize the size of a record
      * @throws IOException if there is a failure in the IO system
      */
-    public static void create(String path, int mdSize, int recordSize) throws IOException
-    {
+    public static void create(String path, int mdSize, int recordSize) throws IOException {
         if (InMemoryPData.exists(path))
             throw new IOException();
 
@@ -128,6 +127,7 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Returns if a file exists at the path
+     *
      * @param path the path to check
      * @return true if a file exists at the path, otherwise false
      */
@@ -137,23 +137,23 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Closes the instance of the BaseBlockFile
+     *
      * @throws IOException if there is a failure in the IO system
      */
     @Override
-    public void close()throws IOException
-    {
+    public void close() throws IOException {
         data.persistMetadata();
         data.close();
     }
 
     /**
      * Opens a BaseBlockFile that has been saved to the specified path
+     *
      * @param path the path of the file
      * @return an instance of BaseBlockFile that has been loaded from a file
      * @throws IOException if there is a failure in the IO system
      */
-    public static BaseBlockFile open(String path) throws IOException
-    {
+    public static BaseBlockFile open(String path) throws IOException {
         BaseBlockFile bbFile = new BaseBlockFile();
         bbFile.data = InMemoryPData.open(path);
         bbFile.metadata = bbFile.data.getMetadata();
@@ -163,15 +163,15 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Gets a ByteBuffer reference with access to bytes of the metadata remaining after this object
-     *   in the metadata.  The buffer has the position set to 0 which is the location the the parent
-     *   class will start storing data.  The limit and capacity are both set to the total metadata size
-     *   minus the relative position
-     * @return a bytebuffer pointing into the shared metadata space.
+     * in the metadata.  The buffer has the position set to 0 which is the location the the parent
+     * class will start storing data.  The limit and capacity are both set to the total metadata size
+     * minus the relative position
+     *
+     * @return a ByteBuffer pointing into the shared metadata space.
      * @throws IOException if there is a failure in the IO system
      */
     @Override
-    public ByteBuffer getMetadata() throws IOException
-    {
+    public ByteBuffer getMetadata() throws IOException {
         metadata = data.getMetadata();
         nextIndex = metadata.getLong();
         recordSize = metadata.getInt();
@@ -180,12 +180,12 @@ public class BaseBlockFile implements BlockFile
 
     /**
      * Copies the instance defined metadata fields into the metadata buffer and calls the persist method
-     *   on any subclasses, resulting in the buffer being written into the persisted file.
+     * on any subclasses, resulting in the buffer being written into the persisted file.
+     *
      * @throws IOException if there is a failure in the IO system
      */
     @Override
-    public void persistMetadata() throws IOException
-    {
+    public void persistMetadata() throws IOException {
         metadata.position(0);
         metadata.putLong(nextIndex);
         metadata.putInt(recordSize);

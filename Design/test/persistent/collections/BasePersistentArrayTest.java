@@ -1,9 +1,6 @@
 package persistent.collections;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import persistent.data.BaseBlockFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,15 +11,13 @@ public class BasePersistentArrayTest {
 
     int DEFAULT_TEST_LOOP_SIZE = 10;
     int recordSize = Integer.SIZE;
-    int mdsize = 100;
+    int mdSize = 100;
 
     @Test
-    public void deletion()
-    {
+    public void deletion() {
         String pathway = "deletion.mml";
-        try
-        {
-            BasePersistentArray.create(pathway, mdsize, recordSize);
+        try {
+            BasePersistentArray.create(pathway, mdSize, recordSize);
             BasePersistentArray test = BasePersistentArray.open(pathway);
             for (int i = 0; i < 5; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
@@ -35,21 +30,17 @@ public class BasePersistentArrayTest {
 
             int intAt3 = test.get(3).getInt();
             assertNotEquals(intAt3, 100);
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             fail("Unsuccesful");
         }
     }
 
     @Test
-    public void deletionAndAdding()
-    {
+    public void deletionAndAdding() {
         String pathway = "deletionAndAdding.mml";
 
-        try
-        {
-            BasePersistentArray.create(pathway, mdsize, recordSize);
+        try {
+            BasePersistentArray.create(pathway, mdSize, recordSize);
             BasePersistentArray test = BasePersistentArray.open(pathway);
             for (int i = 0; i < DEFAULT_TEST_LOOP_SIZE; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
@@ -68,20 +59,16 @@ public class BasePersistentArrayTest {
             int intAt4 = test.get(4).getInt();
             int intInBuffer = newBuffer.getInt();
             assertEquals(intAt4, intInBuffer);
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             fail("Unsuccesful");
         }
     }
 
     @Test
-    public void deletingAlreadyDeleted()
-    {
+    public void deletingAlreadyDeleted() {
         String pathway = "alreadyDeleted.mml";
-        try
-        {
-            BasePersistentArray.create(pathway, mdsize, recordSize);
+        try {
+            BasePersistentArray.create(pathway, mdSize, recordSize);
             BasePersistentArray test = BasePersistentArray.open(pathway);
             for (int i = 0; i < DEFAULT_TEST_LOOP_SIZE; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
@@ -99,9 +86,7 @@ public class BasePersistentArrayTest {
             test.put(test.allocate(), buffer);
             buffer.flip();
             assertEquals(test.get(4).getInt(), buffer.getInt());
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             fail("Unsuccesful");
         }
     }

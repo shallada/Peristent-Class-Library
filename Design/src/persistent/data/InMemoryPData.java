@@ -6,8 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 
-public class InMemoryPData implements PData
-{
+public class InMemoryPData implements PData {
     private ByteBuffer data;
     private ByteBuffer metadata;
     private String path;
@@ -41,7 +40,7 @@ public class InMemoryPData implements PData
             throw new FileNotFoundException(path);
 
         InMemoryPData pdata = created.get(path);
-        if(pdata.HasAnOpenCopy)
+        if (pdata.HasAnOpenCopy)
             throw new IOException("Concurrent access.");
 
         pdata.HasAnOpenCopy = true;
@@ -49,14 +48,12 @@ public class InMemoryPData implements PData
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         HasAnOpenCopy = false;
     }
 
     @Override
-    public int read(ByteBuffer buffer)
-    {
+    public int read(ByteBuffer buffer) {
         int readBytes = buffer.remaining();
         ByteBuffer temp = data.duplicate();
         temp.limit(temp.position() + readBytes);
@@ -65,9 +62,8 @@ public class InMemoryPData implements PData
     }
 
     @Override
-    public void seek(long position)
-    {
-        int positionAsInt = (int)position;
+    public void seek(long position) {
+        int positionAsInt = (int) position;
         if (positionAsInt != position)
             throw new UnsupportedOperationException("We cannot seek that far, bad design");
 
@@ -75,21 +71,18 @@ public class InMemoryPData implements PData
     }
 
     @Override
-    public void write(ByteBuffer buffer)
-    {
+    public void write(ByteBuffer buffer) {
         data.put(buffer);
     }
 
     @Override
-    public ByteBuffer getMetadata() throws IOException
-    {
+    public ByteBuffer getMetadata() throws IOException {
         metadata.position(0);
         return metadata.slice();
     }
 
     @Override
-    public void persistMetadata() throws IOException
-    {
+    public void persistMetadata() throws IOException {
         metadata.position(0);
     }
 }

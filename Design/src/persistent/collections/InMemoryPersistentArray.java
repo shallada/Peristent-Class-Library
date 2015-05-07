@@ -5,8 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryPersistentArray implements PersistentArray
-{
+public class InMemoryPersistentArray implements PersistentArray {
     private ByteBuffer metadata;
     private List<ByteBuffer> persistentArray = new ArrayList<ByteBuffer>();
     private int recordSize;
@@ -40,10 +39,10 @@ public class InMemoryPersistentArray implements PersistentArray
 
     @Override
     public void put(long index, ByteBuffer buffer) throws IOException {
-        if(buffer.limit() != recordSize) {
+        if (buffer.limit() != recordSize) {
             throw new RuntimeException();
         }
-        persistentArray.set((int)index, buffer);
+        persistentArray.set((int) index, buffer);
     }
 
     @Override
@@ -57,5 +56,6 @@ public class InMemoryPersistentArray implements PersistentArray
     }
 
     @Override
-    public void persistMetadata() throws IOException { }
+    public void persistMetadata() throws IOException {
+    }
 }
