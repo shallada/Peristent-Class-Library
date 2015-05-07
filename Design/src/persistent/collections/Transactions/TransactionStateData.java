@@ -14,7 +14,7 @@ public class TransactionStateData
 		setDeleted(deleted);
 	}
 
-	ByteBuffer getData() throws IOException
+	public ByteBuffer getData() throws IOException
 	{
 		if (deleted)
 		{
@@ -23,17 +23,18 @@ public class TransactionStateData
 		return data;
 	}
 
-	void setData(ByteBuffer data)
+	public void setData(ByteBuffer data)
 	{
 		this.data = data;
+		this.deleted = false;
 	}
 
-	boolean isDeleted()
+	public boolean isDeleted()
 	{
 		return deleted;
 	}
 
-	void setDeleted(boolean deleted)
+	public void setDeleted(boolean deleted)
 	{
 		this.deleted = deleted;
 	}

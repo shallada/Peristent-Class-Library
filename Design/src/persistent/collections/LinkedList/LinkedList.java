@@ -22,7 +22,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	 * @param pa The PersistantArray to e used with this LinkeList
 	 * @param payloadClass The class of the generic type being stored in this LinkedList
 	 */
-	public LinkedList(PersistantArray pa, Class<T> payloadClass) {
+	public LinkedList(PersistentArray pa, Class<T> payloadClass) {
 		this.pa = pa;
 		this.valueClass = payloadClass;
 		

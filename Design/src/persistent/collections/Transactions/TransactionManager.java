@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import persistent.collections.BasePersistentArray;
+import persistent.collections.PersistentArray;
 import persistent.collections.LinkedList.LinkedList;
 import persistent.collections.dictionary.PersistentDictionary;
 import persistent.collections.dictionary.PersistentFactory;
@@ -17,13 +18,13 @@ public class TransactionManager {
 	private String transactionMetaDataPath = "/transactions/";
 	private int metaDataSize = 0;
 
-	public TransactionManager(LinkedList<Operation> operationsLog) throws IOException {
+	public TransactionManager(PersistentArray operationsLogPA) throws IOException {
 		TransactionMetaDataFactory tmdfactory = new TransactionMetaDataFactory();
 		BasePersistentArray.create(transactionMetaDataPath, metaDataSize, tmdfactory.sizeInBytes());
 		BasePersistentArray bpa = BasePersistentArray.open(transactionMetaDataPath);
 		transactionLog = new PersistentDictionary<UUID, TransactionMetaData>(
 				bpa, new UUIDFactory(), tmdfactory);
-		this.operationsLog = operationsLog;
+		this.operationsLog = new LinkedList<Operation>(operationsLogPA, Operation.class);
 	}
 
 	public Transaction getTransaction() throws IOException {
@@ -39,7 +40,6 @@ public class TransactionManager {
 	}
 
 	private long writeOperations(Iterator<Operation> ops) throws IOException {
-		long firstRef = 0;
 		synchronized (operationsLog) {
 			while (ops.hasNext()) {
 				Operation next = ops.next();
@@ -57,9 +57,15 @@ public class TransactionManager {
 
 	private void deleteTransaction(UUID transactionId) throws IOException {
 		long currentRef = transactionLog.get(transactionId).getFirstRef();
-		for (; currentRef < currentRef
-				+ transactionLog.get(transactionId).getOperationCount(); currentRef++) {
-			operationsLog.remove(currentRef);
+		
+		Iterator<Operation> i = operationsLog.iterator();
+		Operation op = operationsLog.get(currentRef);
+		
+		while(!i.next().equals(op)){
+			
+		}
+		for (int x = 0; x < transactionLog.get(transactionId).getOperationCount(); x++) {
+			operationsLog.remove(i.next());
 		}
 	}
 	

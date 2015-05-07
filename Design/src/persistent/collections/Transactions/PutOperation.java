@@ -16,12 +16,12 @@ public class PutOperation extends Operation {
 
 	@Override
 	public void execute(TransactionPersistentArray txnpa) throws IOException {
-		this.setOldData(txnpa.get(this.getRef()));
-		txnpa.put(this.getRef(), this.getData());
+		this.setOldData(txnpa.transactionGet(this.getRef()));
+		txnpa.transactionPut(this.getRef(), this.getData());
 	}
 
 	@Override
 	public void undo(TransactionPersistentArray txnpa) throws IOException {
-		txnpa.put(this.getRef(), this.getOldData());
+		txnpa.transactionPut(this.getRef(), this.getOldData());
 	}
 }

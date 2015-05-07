@@ -16,8 +16,8 @@ public class DeleteOperation extends Operation {
 
 	@Override
 	public void execute(TransactionPersistentArray txnpa) throws IOException {
-		setOldData(txnpa.get(getRef()));
-		txnpa.delete(getRef());
+		setOldData(txnpa.transactionGet(getRef()));
+		txnpa.transactionDelete(getRef());
 	}
 
 	@Override
@@ -27,6 +27,6 @@ public class DeleteOperation extends Operation {
 			throw new RollbackInterruptedException(
 					"Someone external allocated during your transaction.");
 		}
-		txnpa.put(getRef(), getOldData());
+		txnpa.transactionPut(getRef(), getOldData());
 	}
 }
