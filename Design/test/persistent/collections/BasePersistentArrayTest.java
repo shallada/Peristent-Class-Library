@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 
 public class BasePersistentArrayTest {
 
-
+    int DEFAULT_TEST_LOOP_SIZE = 10;
     int recordSize = Integer.SIZE;
     int mdsize = 100;
 
@@ -32,7 +32,9 @@ public class BasePersistentArrayTest {
             }
             test.delete(3);
             test.delete(0);
-            assertNotEquals(test.get(3).getInt(), 100);
+
+            int intAt3 = test.get(3).getInt();
+            assertNotEquals(intAt3, 100);
         }
         catch(IOException e)
         {
@@ -49,7 +51,7 @@ public class BasePersistentArrayTest {
         {
             BasePersistentArray.create(pathway, mdsize, recordSize);
             BasePersistentArray test = BasePersistentArray.open(pathway);
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            for (int i = 0; i < DEFAULT_TEST_LOOP_SIZE; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
                 whatever.putInt(i);
                 whatever.flip();
@@ -61,7 +63,11 @@ public class BasePersistentArrayTest {
             newBuffer.flip();
             test.delete(4);
             test.put(test.allocate(), newBuffer);
-            assertEquals(test.get(4).getInt(), newBuffer.getInt());
+            newBuffer.flip();
+
+            int intAt4 = test.get(4).getInt();
+            int intInBuffer = newBuffer.getInt();
+            assertEquals(intAt4, intInBuffer);
         }
         catch(IOException e)
         {
@@ -77,7 +83,7 @@ public class BasePersistentArrayTest {
         {
             BasePersistentArray.create(pathway, mdsize, recordSize);
             BasePersistentArray test = BasePersistentArray.open(pathway);
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            for (int i = 0; i < DEFAULT_TEST_LOOP_SIZE; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
                 whatever.putInt(i);
                 whatever.flip();
@@ -89,7 +95,9 @@ public class BasePersistentArrayTest {
             buffer.flip();
             test.delete(4);
             test.delete(4);
+
             test.put(test.allocate(), buffer);
+            buffer.flip();
             assertEquals(test.get(4).getInt(), buffer.getInt());
         }
         catch(IOException e)

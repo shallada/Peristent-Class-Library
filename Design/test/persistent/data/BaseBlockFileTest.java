@@ -43,7 +43,7 @@ public class BaseBlockFileTest {
         {
             BaseBlockFile.create(pathway, mdsize, recordSize);
             BaseBlockFile test = BaseBlockFile.open(pathway);
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            for (int i = 0; i < 10; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
                 whatever.putInt(i);
                 whatever.flip();
@@ -66,7 +66,7 @@ public class BaseBlockFileTest {
         {
             BaseBlockFile.create(pathway, mdsize, recordSize);
             BaseBlockFile test = BaseBlockFile.open(pathway);
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            for (int i = 0; i < 10; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
                 whatever.putInt(i);
                 whatever.flip();
@@ -91,7 +91,7 @@ public class BaseBlockFileTest {
         {
             BaseBlockFile.create(pathway, mdsize, recordSize);
             BaseBlockFile test = BaseBlockFile.open(pathway);
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            for (int i = 0; i < 10; i++) {
                 ByteBuffer whatever = ByteBuffer.allocate(recordSize);
                 whatever.putInt(i);
                 whatever.flip();
@@ -142,7 +142,8 @@ public class BaseBlockFileTest {
             BaseBlockFile.create(pathway, mdsize, recordSize);
             BaseBlockFile test = BaseBlockFile.open(pathway);
 
-            for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            // Lets go for 10, and not Integer.Max
+            for (int i = 0; i < 10; i++) {
                 assertEquals(test.allocate(), i);
             }
         }

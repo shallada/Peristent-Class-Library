@@ -13,7 +13,7 @@ public class BaseBlockFile implements BlockFile
     protected int recordSize;
     protected long recordCount;
     protected ByteBuffer metadata;
-    protected MdFileTemp data;
+    protected InMemoryPData data;
 
     /**
      * Returns the number of bytes the implementation will need to pass to the factory
@@ -35,6 +35,7 @@ public class BaseBlockFile implements BlockFile
     public long allocate() throws IOException
     {
         long tempIndex = nextIndex++;
+        recordCount++;
         persistMetadata();
         return tempIndex;
     }
@@ -53,6 +54,7 @@ public class BaseBlockFile implements BlockFile
             throw new IndexOutOfBoundsException();
 
         ByteBuffer buffer = ByteBuffer.allocate(recordSize);
+        buffer.position(0);
 
         long readIndex = (index * recordSize);
         data.seek(readIndex);
@@ -60,7 +62,8 @@ public class BaseBlockFile implements BlockFile
 
         // make sure we read the number of bytes that we should have
         assert(bytesRead == recordSize);
-
+        // then flip it
+        buffer.flip();
         return buffer;
     }
 
@@ -69,7 +72,7 @@ public class BaseBlockFile implements BlockFile
      * @param index the index of the bytes
      * @param buffer a buffer of bytes to store
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @throws IllegalArgumentException if the buffer is not the correct length
+     * @throws IllegalStateException if the buffer is not the correct length
      * @throws IOException if there is a failure in the IO system
      */
     @Override
@@ -79,7 +82,9 @@ public class BaseBlockFile implements BlockFile
             throw new IndexOutOfBoundsException();
 
         if (buffer.capacity() != recordSize)
-            throw new IllegalArgumentException("buffer is not the correct size");
+            throw new IllegalStateException("buffer is not the correct size");
+
+        buffer.position(0);
 
         long writeIndex = (index * recordSize);
 
@@ -106,17 +111,17 @@ public class BaseBlockFile implements BlockFile
      */
     public static void create(String path, int mdSize, int recordSize) throws IOException
     {
-        if (MdFileTemp.exists(path))
+        if (InMemoryPData.exists(path))
             throw new IOException();
 
         BaseBlockFile bbFile = new BaseBlockFile();
-        MdFileTemp.create(path, mdSize + ourMetadataSize);
-        bbFile.data = MdFileTemp.open(path);
+        InMemoryPData.create(path, mdSize + ourMetadataSize);
+        bbFile.data = InMemoryPData.open(path);
         bbFile.nextIndex = 0;
         bbFile.recordSize = recordSize;
         bbFile.metadata = bbFile.data.getMetadata();
 
-        bbFile.data.persistMetadata();
+        bbFile.persistMetadata();
         bbFile.data.close();
         bbFile.close();
     }
@@ -127,7 +132,7 @@ public class BaseBlockFile implements BlockFile
      * @return true if a file exists at the path, otherwise false
      */
     public static boolean exists(String path) {
-        return MdFileTemp.exists(path);
+        return InMemoryPData.exists(path);
     }
 
     /**
@@ -150,7 +155,7 @@ public class BaseBlockFile implements BlockFile
     public static BaseBlockFile open(String path) throws IOException
     {
         BaseBlockFile bbFile = new BaseBlockFile();
-        bbFile.data = MdFileTemp.open(path);
+        bbFile.data = InMemoryPData.open(path);
         bbFile.metadata = bbFile.data.getMetadata();
         bbFile.getMetadata();
         return bbFile;
