@@ -1,4 +1,8 @@
-package linked_list;
+package persistent.collections.LinkedList;
+
+import persistent.Persistable;
+
+import java.nio.ByteBuffer;
 
 public class LinkedListNode<T extends Persistable> implements Persistable {
 	protected long previous;

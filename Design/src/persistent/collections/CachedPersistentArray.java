@@ -1,4 +1,4 @@
-package persistance.collections;
+package persistent.collections;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by stephen on 4/27/15.
  */
-public class CachedPersistentArray<E> implements PersistentArray{
+public class CachedPersistentArray<E> implements PersistentArray {
 
     private PersistentArray wrappedPA;
     private SizedLinkedList<E> itemCache;
