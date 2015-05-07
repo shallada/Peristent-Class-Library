@@ -1,10 +1,11 @@
-package Design.src.persistent.data.proxy.commands;
+package persistent.data.proxy.commands;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import persistent.collections.PersistentArray;
 
+@SuppressWarnings("serial")
 public class GetMetadataCommand implements Command
 {
 	private boolean returnable = true;

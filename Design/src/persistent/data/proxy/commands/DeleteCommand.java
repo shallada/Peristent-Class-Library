@@ -1,9 +1,10 @@
-package Design.src.persistent.data.proxy.commands;
+package persistent.data.proxy.commands;
 
 import java.io.IOException;
 
 import persistent.collections.PersistentArray;
 
+@SuppressWarnings("serial")
 public class DeleteCommand implements Command
 {
 	private long index;

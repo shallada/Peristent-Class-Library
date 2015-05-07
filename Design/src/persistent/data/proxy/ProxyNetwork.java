@@ -1,108 +1,135 @@
-package Design.src.persistent.data.proxy;
+package persistent.data.proxy;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.stream.Stream;
 
-import persistent.collections.PersistentArray;
+import persistent.data.proxy.commands.*;
 
-public class ProxyNetwork implements PersistentArray
+class ProxyNetwork
 {
 	private String ipAddress;
 	private int port;
-	private PersistentArray pa;
 	
-	public ProxyNetwork(PersistentArray pa, String ipAddress, int port)
+	protected ProxyNetwork(String ipAddress, int port)
 	{
-		this.pa = pa;
 		this.ipAddress = ipAddress;
 		this.port = port;
 	}
 
-	@Override
-	public long allocate()
+	protected long allocate() throws IOException
 	{
-		// connect to server
-		// create new allocateCommand with this pa 
-		// send allocateCommand over stream
-		// recieve back a new allocateCommand from stream
-		// close stream
-		// return the result from allocateCommand.getResult()
+		Socket socket = this.connect();
+		AllocateCommand ac = new AllocateCommand();
+		this.sendCommand(socket, ac);
+		AllocateCommand returned = (AllocateCommand)this.recieveCommand(socket);
+		socket.close();
+		return returned.getResult();
 	}
 
-	@Override
-	public ByteBuffer get(long index)
+	protected ByteBuffer get(long index) throws IOException
 	{
-		// connect to server
-		// create a new GetCommand give it the this PersistentArray and index in constructor
-		// send GetCommand over the stream
-		// recive back a new GetCommand from the stream
-		// close stream
-		// return the result from GetCommand.getResult()
+		Socket socket = this.connect();
+		GetCommand getCommand = new GetCommand(index);
+		this.sendCommand(socket, getCommand);
+		GetCommand returned = (GetCommand)this.recieveCommand(socket);
+		socket.close();
+		return returned.getResult();
 	}
 
-	@Override
-	public void put(long index, ByteBuffer bb)
+	protected void put(long index, ByteBuffer bb) throws IOException
 	{
-		// connect to server
-		// create a new PutCommand and pass in this.PersistentArray, index, and bb to the constructor
-		// send PutCommand over the stream
-		// close stream
+		Socket socket = this.connect();
+		PutCommand putCommand = new PutCommand(index, bb);
+		this.sendCommand(socket, putCommand);
+		socket.close();
 	}
 
-	@Override
-	public void delete(long index)
+	protected void delete(long index) throws IOException
 	{
-		// connect to server
-		// create a new DeleteCommand with this.persistentArray and the index
-		// send the DeleteCommand over the stream
-		// close stream
+		Socket socket = this.connect();
+		DeleteCommand deleteCommand = new DeleteCommand(index);
+		this.sendCommand(socket, deleteCommand);
+		socket.close();
 	}
 
-	@Override
-	public ByteBuffer getMetadata()
+	protected ByteBuffer getMetadata() throws IOException
 	{
-		// connect to server
-		// create a new GetMetadataCommand with this.persistentArray
-		// send the command over the stream
-		// recieve the finished command from stream
-		// close stream
-		// return the command result
+		Socket socket = this.connect();
+		GetMetadataCommand getCommand = new GetMetadataCommand();
+		this.sendCommand(socket, getCommand);
+		GetMetadataCommand returned = (GetMetadataCommand)this.recieveCommand(socket);
+		socket.close();
+		return returned.getResult();
 	}
 
-	@Override
-	public long getRecordCount()
+	protected long getRecordCount() throws UncheckedIOException
 	{
-		// connect to server
-		// create a new GetRecordCountCommand with this.persistentArray
-		// send the command over the stream
-		// recieve the finished command from stream
-		// close stream
-		// return the command result
+		long result = 0;
+		try
+		{
+			Socket socket = this.connect();
+			GetRecordCountCommand getCommand = new GetRecordCountCommand();
+			this.sendCommand(socket, getCommand);
+			GetRecordCountCommand returned = (GetRecordCountCommand)this.recieveCommand(socket);
+			socket.close();
+			result = returned.getResult();
+		}
+		catch(IOException ex)
+		{
+			throw new UncheckedIOException(ex);
+		}
+		return result;
 	}
 	
-	private Stream connect()
+	protected Socket connect() throws UnknownHostException, IOException
 	{
-		// create a socket connection
-		// open a stream to the IPAddress and port
-		// return the stream
+		Socket client = null;
+		client = new Socket(this.ipAddress, this.port);
+		return client;
+	}
+	
+	protected void sendCommand(Socket socket, Command command) throws IOException
+	{
+		ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+		outputStream.writeObject(command);
+		outputStream.flush();
+	}
+	
+	protected Command recieveCommand(Socket socket) throws IOException
+	{
+		Command returned = null;
+	
+		try
+		{
+			ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+			returned = (Command)inputStream.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("error casting object from stream. " + e.getMessage());
+			e.printStackTrace();
+		}
+		return returned;
 	}
 
-	@Override
-	public void close() throws IOException
+	protected void close() throws IOException
 	{
-		// connect to server
-		// create a new CloseCommand with this.persistentArray
-		// send the command over the stream
-		// close the stream
+		Socket socket = this.connect();
+		CloseCommand closeCommand = new CloseCommand();
+		this.sendCommand(socket, closeCommand);
+		socket.close();
 	}
 
-	@Override
-	public void persistMetadata() throws IOException
+	protected void persistMetadata() throws IOException
 	{
-		// connect to server
-		// create a new PersistMetadataCommand with this.persistentArray
-		// send the command over the stream
-		// close the stream
+		Socket socket = this.connect();
+		PersistMetaDataCommand pmdCommand = new PersistMetaDataCommand();
+		this.sendCommand(socket, pmdCommand);
+		socket.close();
 	}
 }

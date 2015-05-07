@@ -1,71 +1,69 @@
-package Design.src.persistent.data.proxy;
+package persistent.data.proxy;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 
-import persistent.array.PersistentArrayInterface;
 import persistent.collections.PersistentArray;
 
 public class ProxyPersistentArray implements PersistentArray
 {
 	private ProxyNetwork proxyNetwork;
 	
-	public ProxyPersistentArray(PersistentArray persistentArray, String ipAddress, int port)
+	public ProxyPersistentArray(String ipAddress, int port)
 	{
-		proxyNetwork = new ProxyNetwork(persistentArray, ipAddress, port);
+		this.proxyNetwork = new ProxyNetwork(ipAddress, port);
 	}
 	
 	@Override
-	public long allocate()
+	public long allocate() throws IOException
 	{
-		// call allocate on proxyNetwork
-		// return Long recieved
+		long allocatedSpace = proxyNetwork.allocate();
+		return allocatedSpace;
 	}
 
 	@Override
-	public ByteBuffer get(long index)
+	public ByteBuffer get(long index) throws IOException
 	{
-		// call get on proxyNetowrk passing index
-		// save the returned bytebuffer as bb
-		// return bb
+		ByteBuffer bb = this.proxyNetwork.get(index);
+		return bb;
 	}
 
 	@Override
-	public void put(long index, ByteBuffer bb)
+	public void put(long index, ByteBuffer bb) throws IOException
 	{
-		// call put on proxyNetwork passing index and bb
+		this.proxyNetwork.put(index, bb);
 	}
 
 	@Override
-	public void delete(long index)
+	public void delete(long index) throws IOException
 	{
-		// call delete on proxyNetwork passing index
+		this.proxyNetwork.delete(index);
 	}
 
 	@Override
-	public ByteBuffer getMetadata()
+	public ByteBuffer getMetadata() throws IOException
 	{
-		// call getMetaData on proxyNetwork
-		// Recieve ByteBufffer and save as bb
-		// return bb
+		ByteBuffer bb = this.proxyNetwork.getMetadata();
+		return bb;
 	}
 
 	@Override
-	public long getRecordCount()
+	public long getRecordCount() throws UncheckedIOException
 	{
-		// call getRecordCount on proxyNetwork
+		long recordCount = this.proxyNetwork.getRecordCount();
+		return recordCount;
 	}
 
 	@Override
 	public void close() throws IOException
 	{
-		// call close on the proxyNetwork
+		this.proxyNetwork.close();
 	}
 
 	@Override
 	public void persistMetadata() throws IOException
 	{
-		// call persistMetaData on the proxyNetwork		
+		this.proxyNetwork.persistMetadata();	
 	}
-
 }

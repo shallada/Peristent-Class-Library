@@ -1,13 +1,13 @@
-package Design.src.persistent.data.proxy.commands;
+package persistent.data.proxy.commands;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import persistent.collections.PersistentArray;
 
+@SuppressWarnings("serial")
 public class GetCommand implements Command
 {
-	private PersistentArray pa;
 	private long index;
 	private ByteBuffer bbResult;
 	private boolean returnable = true;
