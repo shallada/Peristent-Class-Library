@@ -1,5 +1,7 @@
 package persistance.collections;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.*;
 
 /**
@@ -20,13 +22,26 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
         indexToItem = new HashMap<>();
     }
 
+    public SizedLinkedList( Collection<E> collection ) {
+
+        this.CAPACITY = collection.size();
+        this.wrappedLL = new LinkedList<>();
+
+        indexToItem = new HashMap<>();
+
+        long i = 0;
+        for ( E e : collection ) {
+            indexToItem.put(i, e);
+            i++;
+        }
+    }
 
     @Override
     public boolean add( E e ) {
         // Add to front of the linkedList
-        wrappedLL.removeLast();
-        // remove tail of link list
         wrappedLL.addFirst(e);
+        // remove tail of link list
+        if ( wrappedLL.size() > CAPACITY ) wrappedLL.removeLast();
         // adjust the hashmap to reflect changes
         Collection<E> values = indexToItem.values();
         indexToItem.clear();
@@ -34,7 +49,9 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
         // insert at the top
         indexToItem.put(0L, e);
         final long[] i = { 1 };
-        values.forEach(x -> indexToItem.put(i[0]++, x));
+        for ( E value : values ) {
+            indexToItem.put(i[0]++, value);
+        }
 
         return true;
     }
@@ -51,32 +68,38 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
             Map.Entry<Long, E> entryToRemove = null;
             // iter through the entrySet, assigning entryToRemove if it's key == o
             for ( Map.Entry<Long, E> longEEntry : indexToItem.entrySet() ) {
-                if (longEEntry.getKey() == o) {
+                if ( longEEntry.getKey() == o ) {
                     entryToRemove = longEEntry;
                     break;
                 }
             }
 
-            if (entryToRemove != null) indexToItem.entrySet().remove(entryToRemove);
+            if ( entryToRemove != null ) {
+                return indexToItem.remove(entryToRemove.getKey()) != null;
+            }
 
-            return indexToItem.values().remove(o);
+//            return indexToItem.values().remove(o);
         }
         return false;
     }
 
+    /**
+     * Checks the collection's iterator against the backed list's iterator
+     *
+     * @param c
+     * @return if all the elements are in order in this list
+     */
     @Override
     public boolean containsAll( Collection<?> c ) {
-        Iterator<?> cIter = c.iterator();
-        Iterator<E> eIter = iterator();
 
-        Object cCurr = cIter.next();
-        E eCurr = eIter.next();
+        final boolean[] containsAll = { true };
 
-        for (; cIter.hasNext() && eIter.hasNext(); cCurr = cIter.next(), eCurr = eIter.next() ) {
-            if ( cCurr != eCurr ) return false;
-        }
+        c.forEach(item -> {
+            if (!contains(item))
+                containsAll[0] = false;
+        });
 
-        return true;
+        return containsAll[0];
     }
 
     public boolean containsKey( long potentialKey ) {
@@ -85,22 +108,25 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
 
     @Override
     public boolean addAll( Collection<? extends E> c ) {
-        return false;
+        c.forEach(this::add);
+        return this.containsAll(c);
     }
 
     @Override
     public boolean addAll( int index, Collection<? extends E> c ) {
-        return false;
+        wrappedLL.addAll(index, c);
+        while (wrappedLL.size() > CAPACITY) wrappedLL.removeLast();
+        return this.containsAll(c);
     }
 
     @Override
     public boolean removeAll( Collection<?> c ) {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean retainAll( Collection<?> c ) {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -111,13 +137,14 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
 
     /**
      * Promote the value at the index to the front of the linkedList
+     *
      * @param index where the value is in the linkedList
      * @return desired value
      */
     @Override
     public E get( int index ) {
 
-        if (index > CAPACITY) throw new IllegalArgumentException("index");
+        if ( index > CAPACITY ) throw new IllegalArgumentException("index");
 
         // get index in the wrappedLL
         E e = wrappedLL.get(index);
@@ -138,7 +165,7 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
         indexToItem.put(0L, e);
 
         for ( long i = 1, length = values.size(); i < length; i++ )
-            indexToItem.put(i, values.get((int) (i - 1)));
+            indexToItem.put(i, values.get((int) ( i - 1 )));
 
         return e;
     }
@@ -150,8 +177,14 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
 
     @Override
     public void add( int index, E element ) {
-        if (index >= CAPACITY) throw new IllegalArgumentException("index");
+        if ( index >= CAPACITY ) throw new IllegalArgumentException("index");
         wrappedLL.add(index, element);
+        if (wrappedLL.size() > CAPACITY) wrappedLL.removeLast();
+        indexToItem.clear();
+        long i = 0;
+        for ( E e : wrappedLL ) {
+            indexToItem.put(i++, e);
+        }
     }
 
     @Override
@@ -226,6 +259,46 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
     @Override
     public <T> T[] toArray( T[] a ) {
         return wrappedLL.toArray(a);
+    }
+
+    public HashMap<Long, E> getIndexToItem() {
+        return indexToItem;
+    }
+
+    public int getCAPACITY() {
+        return CAPACITY;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for ( E e : wrappedLL ) {
+            if ( !first ) builder.append(",");
+
+            builder.append(e);
+            first = false;
+        }
+
+        builder.append("]");
+
+        return builder.toString();
+    }
+
+    /**
+     *
+     * @return the indices that make up the key set
+     */
+    public Set<Long> getIndexSet() {
+        return indexToItem.keySet();
+    }
+
+    /**
+     * Returns
+     * @return the values that the keys map to
+     */
+    public Collection<E> getValues() {
+        return indexToItem.values();
     }
 
     /**
