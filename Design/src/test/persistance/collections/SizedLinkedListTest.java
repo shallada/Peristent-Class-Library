@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 import persistance.collections.SizedLinkedList;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 
@@ -18,6 +19,14 @@ import java.util.ArrayList;
 public class SizedLinkedListTest {
 
     SizedLinkedList<Integer> sizedLinkedList = new SizedLinkedList<>(7);
+    ArrayList<Integer> items = new ArrayList<Integer>() {
+        {
+            add(16);
+            add(15);
+            add(14);
+            add(13);
+        }
+    };
 
     @Before
     public void before() throws Exception {
@@ -40,6 +49,7 @@ public class SizedLinkedListTest {
     @Test
     public void testAddE() throws Exception {
 //TODO: Test goes here...
+        System.out.println("\nAddE");
         System.out.println(sizedLinkedList);
         Assert.assertTrue("First element should be 0", sizedLinkedList.get(0) == 6);
         sizedLinkedList.add(3);
@@ -54,6 +64,7 @@ public class SizedLinkedListTest {
     public void testRemoveO() throws Exception {
 //TODO: Test goes here...
 
+        System.out.println("\nRemove0");
         System.out.println(sizedLinkedList);
 
         Assert.assertTrue("This should be 5", sizedLinkedList.remove(3) == 3);
@@ -68,19 +79,14 @@ public class SizedLinkedListTest {
     @Test
     public void testContainsAll() throws Exception {
 //TODO: Test goes here...
-        ArrayList<Integer> items = new ArrayList<Integer>() {
-            {
-                add(6);
-                add(5);
-                add(4);
-                add(3);
-            }
-        };
+        System.out.println("\nContainsAll");
 
-        System.out.println();
+        System.out.println("Items: " + items);
+        sizedLinkedList.addAll(items);
 
-        Assert.assertTrue("These items are in there, in order. This should work",
-                sizedLinkedList.containsAll(items));
+        Assert.assertTrue("These items are in there, in order. This should work", sizedLinkedList.containsAll(items));
+
+        System.out.println(sizedLinkedList);
     }
 
     /**
@@ -88,7 +94,10 @@ public class SizedLinkedListTest {
      */
     @Test
     public void testContainsKey() throws Exception {
-//TODO: Test goes here... 
+//TODO: Test goes here...
+        System.out.println("\nContainsKey:");
+        Assert.assertTrue(sizedLinkedList.containsKey(0));
+        System.out.println(sizedLinkedList.getIndexSet());
     }
 
     /**
@@ -96,7 +105,16 @@ public class SizedLinkedListTest {
      */
     @Test
     public void testAddAllC() throws Exception {
-//TODO: Test goes here... 
+//TODO: Test goes here...
+
+        System.out.println("AddAllC");
+        Assert.assertFalse("We haven't added the items yet", sizedLinkedList.containsAll(items));
+        System.out.println(sizedLinkedList);
+
+        sizedLinkedList.addAll(items);
+
+        Assert.assertTrue("Because we check in sequence, containsAll should be false", sizedLinkedList.containsAll(items));
+        System.out.println(sizedLinkedList);
     }
 
     /**
@@ -104,13 +122,19 @@ public class SizedLinkedListTest {
      */
     @Test
     public void testAddAllForIndexC() throws Exception {
-//TODO: Test goes here... 
+//TODO: Test goes here...
+        System.out.println("AddAllAtIndex");
+        Assert.assertFalse("We don't have items yet", sizedLinkedList.containsAll(items));
+
+        sizedLinkedList.addAll(1, items);
+        System.out.println(sizedLinkedList);
+
     }
 
     /**
      * Method: removeAll(Collection<?> c)
      */
-    @Test
+    @Test(expected = NotImplementedException.class)
     public void testRemoveAll() throws Exception {
 //TODO: Test goes here... 
     }
@@ -118,9 +142,9 @@ public class SizedLinkedListTest {
     /**
      * Method: retainAll(Collection<?> c)
      */
-    @Test
+    @Test(expected = NotImplementedException.class)
     public void testRetainAll() throws Exception {
-//TODO: Test goes here... 
+//TODO: Test goes here...
     }
 
     /**
@@ -128,7 +152,13 @@ public class SizedLinkedListTest {
      */
     @Test
     public void testClear() throws Exception {
-//TODO: Test goes here... 
+//TODO: Test goes here...
+        System.out.println("\nTestClear");
+        Assert.assertFalse(sizedLinkedList.size() > 0);
+        System.out.println(sizedLinkedList);
+        System.out.println("Clearing");
+        Assert.assertTrue(sizedLinkedList.size() == 0);
+        System.out.println(sizedLinkedList);
     }
 
     /**

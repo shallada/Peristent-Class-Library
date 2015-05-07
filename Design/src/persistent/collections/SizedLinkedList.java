@@ -1,5 +1,7 @@
 package persistance.collections;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.*;
 
 /**
@@ -83,26 +85,21 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
 
     /**
      * Checks the collection's iterator against the backed list's iterator
+     *
      * @param c
      * @return if all the elements are in order in this list
      */
     @Override
     public boolean containsAll( Collection<?> c ) {
-        Iterator<?> cIter = c.iterator();
-        Iterator<E> eIter = iterator();
 
-        Object cCurr = cIter.next();
-        E eCurr = eIter.next();
+        final boolean[] containsAll = { true };
 
-        while( eCurr != cCurr && cIter.hasNext()) {
-            cCurr = cIter.next();
-        }
+        c.forEach(item -> {
+            if (!contains(item))
+                containsAll[0] = false;
+        });
 
-        for (; cIter.hasNext() && eIter.hasNext(); cCurr = cIter.next(), eCurr = eIter.next() ) {
-            if ( cCurr != eCurr ) return false;
-        }
-
-        return true;
+        return containsAll[0];
     }
 
     public boolean containsKey( long potentialKey ) {
@@ -111,22 +108,25 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
 
     @Override
     public boolean addAll( Collection<? extends E> c ) {
-        return false;
+        c.forEach(this::add);
+        return this.containsAll(c);
     }
 
     @Override
     public boolean addAll( int index, Collection<? extends E> c ) {
-        return false;
+        wrappedLL.addAll(index, c);
+        while (wrappedLL.size() > CAPACITY) wrappedLL.removeLast();
+        return this.containsAll(c);
     }
 
     @Override
     public boolean removeAll( Collection<?> c ) {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean retainAll( Collection<?> c ) {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -179,6 +179,12 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
     public void add( int index, E element ) {
         if ( index >= CAPACITY ) throw new IllegalArgumentException("index");
         wrappedLL.add(index, element);
+        if (wrappedLL.size() > CAPACITY) wrappedLL.removeLast();
+        indexToItem.clear();
+        long i = 0;
+        for ( E e : wrappedLL ) {
+            indexToItem.put(i++, e);
+        }
     }
 
     @Override
@@ -255,12 +261,20 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
         return wrappedLL.toArray(a);
     }
 
+    public HashMap<Long, E> getIndexToItem() {
+        return indexToItem;
+    }
+
+    public int getCAPACITY() {
+        return CAPACITY;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("[");
         boolean first = true;
         for ( E e : wrappedLL ) {
-            if (!first) builder.append(",");
+            if ( !first ) builder.append(",");
 
             builder.append(e);
             first = false;
@@ -269,6 +283,22 @@ public class SizedLinkedList <E> implements List<E>, Cloneable {
         builder.append("]");
 
         return builder.toString();
+    }
+
+    /**
+     *
+     * @return the indices that make up the key set
+     */
+    public Set<Long> getIndexSet() {
+        return indexToItem.keySet();
+    }
+
+    /**
+     * Returns
+     * @return the values that the keys map to
+     */
+    public Collection<E> getValues() {
+        return indexToItem.values();
     }
 
     /**
