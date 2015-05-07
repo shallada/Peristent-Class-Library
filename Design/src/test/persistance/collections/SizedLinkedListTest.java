@@ -1,10 +1,10 @@
 package test.persistance.collections;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.Before;
 import org.junit.After;
-import persistance.collections.SizedLinkedList;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import persistent.collections.SizedLinkedList;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 public class SizedLinkedListTest {
 
-    SizedLinkedList<Integer> sizedLinkedList = new SizedLinkedList<>(7);
+    SizedLinkedList<Integer> sizedLinkedList = new SizedLinkedList<Integer>(7);
     ArrayList<Integer> items = new ArrayList<Integer>() {
         {
             add(16);

@@ -1,4 +1,4 @@
-package persistance.collections;
+package persistent.collections;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 

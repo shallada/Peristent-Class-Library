@@ -1,18 +1,27 @@
-package linked_list;
+package persistent.collections.LinkedList;
+
+import persistent.Persistable;
+import persistent.collections.PersistentArray;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 public class LinkedList<T extends Persistable> implements Iterable<T> {
-	private PersistantArray pa;
+	private PersistentArray pa;
 	private long head;
 	private long count;
 	private ByteBuffer metadata;
 	private Class<T> valueClass;
 	
 	/**
-	 * Creates an instance of this LinkedList using the passed in PersistantArray as its storage source and the class of the generic type used in this list for deserialization
-	 * @param pa The PersistantArray to e used with this LinkeList
+	 * Creates an instance of this LinkedList using the passed in PersistentArray as its storage source and the class of the generic type used in this list for deserialization
+	 * @param pa The PersistentArray to e used with this LinkeList
 	 * @param payloadClass The class of the generic type being stored in this LinkedList
 	 */
-	public LinkedList(PersistantArray pa, Class<T> payloadClass) {
+	public LinkedList(PersistentArray pa, Class<T> payloadClass) {
 		this.pa = pa;
 		this.valueClass = payloadClass;
 		
@@ -61,7 +70,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	/**
 	 * Returns the size of the records used by this LinkedList
 	 * @param payload An instance of the type stored in this LinkedList
-	 * @return The total size, in bytes, of the record to be stored in the PersistantArray
+	 * @return The total size, in bytes, of the record to be stored in the PersistentArray
 	 */
 	public static <T extends Persistable> int getRecSize(T payload) {
 		return (Long.BYTES * 2) + payload.getSize();
@@ -127,7 +136,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	}
 	
 	/**
-	 * Adds the given value to the position before the given node reference in the LinkedList and adds it to the PersistantArray
+	 * Adds the given value to the position before the given node reference in the LinkedList and adds it to the PersistentArray
 	 * @param nodeRef The index the node that is being added before is located at
 	 * @param val the value to be added to the LinkedList
 	 * @return The index that the newly added node
@@ -154,7 +163,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	}
 	
 	/**
-	 * Adds the given value to the position after the given node reference in the LinkedList and adds it to the PersistantArray
+	 * Adds the given value to the position after the given node reference in the LinkedList and adds it to the PersistentArray
 	 * @param nodeRef The index of the of the node that is being added after
 	 * @param val The value to be added to the LinkedList
 	 * @return The index of the newly added node
@@ -218,7 +227,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	}
 	
 	/**
-	 * Removes the node at the given index from the PersistantArray
+	 * Removes the node at the given index from the PersistentArray
 	 * @param nodeRef The location of the node to remove
 	 * @throws IOException
 	 */
@@ -329,7 +338,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 				currentNode = getNode(head);
 			} catch (IOException e) {
 				e.printStackTrace();
-				throw new IllegalStateException("Could not load head node from PersistantArray");
+				throw new IllegalStateException("Could not load head node from PersistentArray");
 			}
 			this.predicate = predicate;
 		}
