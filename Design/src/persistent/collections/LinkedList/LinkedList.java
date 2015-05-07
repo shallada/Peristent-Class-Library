@@ -1,7 +1,17 @@
 package linked_list;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import javax.sql.rowset.Predicate;
+
+import persistent.Persistable;
+import persistent.collections.PersistentArray;
+
 public class LinkedList<T extends Persistable> implements Iterable<T> {
-	private PersistantArray pa;
+	private PersistentArray pa;
 	private long head;
 	private long count;
 	private ByteBuffer metadata;
@@ -12,7 +22,7 @@ public class LinkedList<T extends Persistable> implements Iterable<T> {
 	 * @param pa The PersistantArray to e used with this LinkeList
 	 * @param payloadClass The class of the generic type being stored in this LinkedList
 	 */
-	public LinkedList(PersistantArray pa, Class<T> payloadClass) {
+	public LinkedList(PersistentArray pa, Class<T> payloadClass) {
 		this.pa = pa;
 		this.valueClass = payloadClass;
 		

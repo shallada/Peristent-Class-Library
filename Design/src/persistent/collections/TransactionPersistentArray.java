@@ -10,8 +10,7 @@ import persistent.collections.Transactions.Operation;
 import persistent.collections.Transactions.PutOperation;
 import persistent.collections.Transactions.Transaction;
 
-public class TransactionPersistentArray implements PersistentArray
-{
+public class TransactionPersistentArray implements PersistentArray {
 
 	private Transaction transaction;
 	private PersistentArray lowerPersistentArray;
@@ -20,129 +19,111 @@ public class TransactionPersistentArray implements PersistentArray
 
 	protected static int ourMetadataSize = Long.BYTES;
 
-	public TransactionPersistentArray(PersistentArray lowerPersistentArray, long recordSize)
-	{
+	public TransactionPersistentArray(PersistentArray lowerPersistentArray,
+			long recordSize) {
 		this.lowerPersistentArray = lowerPersistentArray;
 		this.recordSize = recordSize;
 		id = UUID.randomUUID();
 	}
 
 	@Override
-	public long allocate() throws IOException
-	{
+	public long allocate() throws IOException {
 		long ref;
 		ref = lowerPersistentArray.allocate();
-		if (transaction != null)
-		{
-			Operation allocateOp = new AllocateOperation(this, ref);
+		if (transaction != null) {
+			Operation allocateOp = new AllocateOperation(id, recordSize, ref);
 			transaction.addOperation(allocateOp);
 		}
 		return ref;
 	}
 
 	@Override
-	public void delete(long index) throws IOException
-	{
-		if (transaction != null)
-		{
-			Operation allocateOp = new DeleteOperation(this, index);
+	public void delete(long index) throws IOException {
+		if (transaction != null) {
+			Operation allocateOp = new DeleteOperation(id, index, recordSize);
 			transaction.addOperation(allocateOp);
 			transaction.txnStateDel(index);
-		}
-		else
-		{
+		} else {
 			lowerPersistentArray.delete(index);
 		}
 
 	}
 
 	@Override
-	public ByteBuffer get(long index) throws IOException
-	{
+	public ByteBuffer get(long index) throws IOException {
 		ByteBuffer data = transaction.get(index);
-		if (data == null)
-		{
+		if (data == null) {
 			lowerPersistentArray.get(index);
 		}
 		return data;
 	}
 
 	@Override
-	public void put(long index, ByteBuffer buffer) throws IOException
-	{
-		if (transaction != null)
-		{
-			Operation allocateOp = new PutOperation(this, index, buffer);
+	public void put(long index, ByteBuffer buffer) throws IOException {
+		if (transaction != null) {
+			Operation allocateOp = new PutOperation(id, recordSize, index, buffer);
 			transaction.addOperation(allocateOp);
 			transaction.txnStatePut(index, buffer);
-		}
-		else
-		{
+		} else {
 			lowerPersistentArray.put(index, buffer);
 		}
 	}
 
 	@Override
-	public void close() throws IOException
-	{
+	public void close() throws IOException {
 		lowerPersistentArray.close();
 
 	}
 
 	@Override
-	public long getRecordCount()
-	{
+	public long getRecordCount() {
 		return lowerPersistentArray.getRecordCount();
 	}
 
 	@Override
-	public ByteBuffer getMetadata() throws IOException
-	{
+	public ByteBuffer getMetadata() throws IOException {
 		ByteBuffer bb = lowerPersistentArray.getMetadata();
 		this.recordSize = bb.getLong();
-		return bb;
+		return bb.slice();
 	}
 
 	@Override
-	public void persistMetadata() throws IOException
-	{
+	public void persistMetadata() throws IOException {
 		ByteBuffer bb = lowerPersistentArray.getMetadata();
 		bb.putLong(recordSize);
 		lowerPersistentArray.persistMetadata();
 	}
 
-	public long transactionAllocate() throws IOException
-	{
+	public long transactionAllocate() throws IOException {
 		return lowerPersistentArray.allocate();
 	}
 
-	public void transactionPut(long index, ByteBuffer data) throws IOException
-	{
+	public void transactionPut(long index, ByteBuffer data) throws IOException {
 		lowerPersistentArray.put(index, data);
 	}
 
-	public void transactionDelete(long index) throws IOException
-	{
+	public void transactionDelete(long index) throws IOException {
 		lowerPersistentArray.delete(index);
 	}
 
-	public void setTransaction(Transaction t)
-	{
+	public ByteBuffer transactionGet(long index) throws IOException {
+
+		return lowerPersistentArray.get(index);
+	}
+
+	public void setTransaction(Transaction t) {
 		this.transaction = t;
 	}
 
-	public Transaction getTransaction()
-	{
+	public Transaction getTransaction() {
 		return transaction;
 	}
 
-	public long getRecordSize()
-	{
+	public long getRecordSize() {
 		return this.recordSize;
 	}
 
-	public UUID getId()
-	{
+	public UUID getId() {
 		return id;
 	}
 }

@@ -1,32 +1,36 @@
 package persistent.collections.Transactions;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import persistent.Persistable;
 import persistent.collections.TransactionPersistentArray;
 
-public abstract class Operation
+public abstract class Operation implements Persistable
 {
-	private long nextRef = -1;
 	private long ref;
 	private ByteBuffer data;
 	private ByteBuffer oldData;
+	private long recordSize;
 	private UUID transactionPersistentArrayId;
 	
-    abstract void execute(TransactionPersistentArray txnpa) throws IOException;
-    abstract void undo(TransactionPersistentArray txnpa) throws IOException, RollbackInterruptedException;
+	private static final int UUID_SIZE_IN_BYTES = 36;
+	
+    public abstract void execute(TransactionPersistentArray txnpa) throws IOException;
+    public abstract void undo(TransactionPersistentArray txnpa) throws IOException, RollbackInterruptedException;
+	
+    public Operation(long ref, long recordSize, UUID id){
+    	this.ref = ref;
+    	this.recordSize = recordSize;
+    	this.transactionPersistentArrayId = id;
+    }
     
-	public long getNextRef()
-	{
-		return nextRef;
-	}
-	
-	public void setNextRef(long nextRef)
-	{
-		this.nextRef = nextRef;
-	}
-	
+    public long getRecordSize() {
+    	return this.recordSize;
+    }
+    
 	public long getRef()
 	{
 		return ref;
@@ -65,5 +69,47 @@ public abstract class Operation
 	public void setTransactionPersistentArrayId(UUID transactionPersistentArrayId)
 	{
 		this.transactionPersistentArrayId = transactionPersistentArrayId;
+	}
+	
+	@Override
+	public ByteBuffer allocate() {
+		return ByteBuffer.allocate(this.getSize());
+	}
+
+	@Override
+	public int getSize() {
+		int size = Long.BYTES + (int)this.recordSize + (int)this.recordSize + Long.BYTES + UUID_SIZE_IN_BYTES;
+		return size;
+	}
+
+	@Override
+	public void load(ByteBuffer buffer) {
+		byte[] uuid = new byte[UUID_SIZE_IN_BYTES];
+		
+		this.recordSize = buffer.getLong();
+		this.ref = buffer.getLong();
+		buffer.get(uuid, 0, uuid.length);
+		try {
+			this.transactionPersistentArrayId = UUID.fromString(new String(uuid, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+		byte[] oldDataBytes = new byte[(int)recordSize];
+		buffer.get(oldDataBytes);
+		this.oldData = ByteBuffer.wrap(oldDataBytes);
+		
+		byte[] newDataBytes = new byte[(int)recordSize];
+		buffer.get(newDataBytes);
+		this.data = ByteBuffer.wrap(newDataBytes);
+	}
+
+	@Override
+	public void serialize(ByteBuffer buffer) {
+		buffer.putLong(recordSize);
+		buffer.putLong(ref);
+		buffer.put(transactionPersistentArrayId.toString().getBytes());
+		buffer.put(this.oldData);
+		buffer.put(data);
 	}
 }

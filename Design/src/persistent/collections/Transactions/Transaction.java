@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import persistent.collections.BasePersistentArray;
-import persistent.collections.PersistentArray;
 import persistent.collections.TransactionPersistentArray;
+import persistent.collections.LinkedList.LinkedList;
+import persistent.collections.Transactions.MultipleTransactionException;
+import persistent.collections.Transactions.Operation;
+import persistent.collections.Transactions.TransactionManager;
+import persistent.collections.Transactions.TransactionStateData;
 import persistent.collections.dictionary.PersistentDictionary;
 import persistent.collections.dictionary.PersistentFactory;
 
@@ -16,7 +20,7 @@ public class Transaction {
 	private String transactionStatePath = "/transactions/";
 	private TransactionManager transactionManager;
 	private UUID transactionID;
-	private PersistentArray operations;
+	private LinkedList<Operation> operations;
 	private ArrayList<TransactionPersistentArray> registeredArrays = new ArrayList<TransactionPersistentArray>();
 
 	PersistentDictionary<Long, TransactionStateData> transactionState;
@@ -50,9 +54,9 @@ public class Transaction {
 		}
 	}
 
-	public void commit() {
+	public void commit() throws IOException, RollbackInterruptedException {
 		transactionManager.commitPhaseOne(transactionID,
-				operations.getIterator(), operationCount); //// not sure how to do this?
+				operations.iterator(), operationCount);
 		writeToDisk();
 		transactionManager.commitPhaseTwo(transactionID);
 		for (TransactionPersistentArray xpa : registeredArrays) {
@@ -60,8 +64,8 @@ public class Transaction {
 		}
 	}
 
-	public void writeToDisk() {
-		for (Operation op : operations) { //// not sure how to do this?
+	public void writeToDisk() throws IOException, RollbackInterruptedException {
+		for (Operation op : operations) {
 			try {
 				op.execute(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			} catch (IOException e) {
@@ -71,21 +75,17 @@ public class Transaction {
 		}
 	}
 
-	public void rollback(Operation operation) {
-		for (Operation op : operations) { //// not sure how to do this?
+	public void rollback(Operation operation) throws IOException, RollbackInterruptedException {
+		for (Operation op : operations) {
 			while (!operation.equals(op)) {
 				op.undo(findTransactionPersistentArrayById(op.getTransactionPersistentArrayId()));
 			}
 		}
 	}
-
+	
 	public void addOperation(Operation op) throws IOException {
 		operationCount++;
-		long index = operations.allocate();
-		OperationFactory factory = new OperationFactory();
-		ByteBuffer bb = ByteBuffer.allocate(factory.sizeInBytes());
-		factory.toBuffer(bb, op);
-		operations.put(index, bb);
+		operations.addToEnd(op);
 	}
 
 	public void txnStatePut(long index, ByteBuffer data) {
@@ -117,30 +117,6 @@ public class Transaction {
 		}
 		return null;
 	}
-	
-	//implement these. -------------------------------------------
-	
-	private class OperationFactory implements PersistentFactory<Operation>{
-
-		@Override
-		public Operation fromBuffer(ByteBuffer data) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void toBuffer(ByteBuffer buffer, Operation obj) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public int sizeInBytes() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-	}
 
 	private class LongFactory implements PersistentFactory<Long> {
 
@@ -162,6 +138,7 @@ public class Transaction {
 
 	private class TransactionStateDataFactory implements
 			PersistentFactory<TransactionStateData> {
+		int booleanSize = 1;
 
 		@Override
 		public TransactionStateData fromBuffer(ByteBuffer data) {
@@ -180,12 +157,11 @@ public class Transaction {
 			{
 				e.printStackTrace();
 			}
-
 		}
 
 		@Override
 		public int sizeInBytes() {
-			return 1;
+			return booleanSize;
 		}
 
 	}
