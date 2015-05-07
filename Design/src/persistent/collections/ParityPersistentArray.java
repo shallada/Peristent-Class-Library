@@ -3,6 +3,8 @@ package persistent.collections;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import javax.naming.OperationNotSupportedException;
+
 public class ParityPersistentArray implements PersistentArray{
 
 	private PersistentArray[] PAA;
@@ -20,7 +22,7 @@ public class ParityPersistentArray implements PersistentArray{
 		return PAA[(int) (getHiddenIndex(index)%PAA.length)]
 			.get(getHiddenIndex(index)/PAA.length);
 	}
-	
+
 	public long allocate() throws IOException{
 		// whichArray = Find PA with the lowest size
 		// long index = Call allocate on that array
@@ -32,11 +34,14 @@ public class ParityPersistentArray implements PersistentArray{
 				smallest = i;
 		}
 		
+
 		long row = PAA[smallest].allocate();
 		
 		if(row%PAA.length == smallest){
 			return allocate();
 		}
+		
+		calculateParityForRow(row);
 		
 		long outwardIndex = getPublicIndex(PAA.length*row+smallest);
 		return outwardIndex;
@@ -49,22 +54,45 @@ public class ParityPersistentArray implements PersistentArray{
 			if(row%PAA.length == i){
 				// This is the parity
 				try{
-					parity = PAA[i].get(row);					
+					parity = PAA[i].get(row);			
 				} catch (Exception e){
-					
+					PAA[i].allocate();
+					parity = PAA[i].get(row);
+				}
+			} else {
+				try{
+					ByteBuffer next = PAA[i].get(row);
+					if(xor == null){
+						xor = ByteBuffer.allocate(next.capacity());
+					} else {
+						xor.flip();
+						ByteBuffer n = ByteBuffer.allocate(xor.capacity());
+						for(byte b = next.get(); next.hasRemaining(); b = next.get()){
+							n.put((byte) (b ^ xor.get()));
+						}
+						xor = n;
+					}
+				} catch (Exception e){
+					PAA[i].allocate();
+					parity = PAA[i].get(row);
 				}
 			}
 		}
 	}
 
+
 	public void put(long index, ByteBuffer buffer) throws IOException{
+		// PAA[getHiddenIndex(index)%PAA.length]
+		//	.put(getHiddenIndex(index)/PAA.length, buffer);
 		PAA[(int) (getHiddenIndex(index)%PAA.length)]
 				.put(getHiddenIndex(index)/PAA.length, buffer);
+		calculateParityForRow(index/PAA.length);
 	}
 
 	public void delete(long index) throws IOException{
-		PAA[(int) (getHiddenIndex(index)%PAA.length)]
-				.delete(getHiddenIndex(index)/PAA.length);
+		throw new UnsupportedOperationException("No deletions are allowed.");
+//		PAA[(int) (getHiddenIndex(index)%PAA.length)]
+//				.delete(getHiddenIndex(index)/PAA.length);
 	}
 
 	@Override

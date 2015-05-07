@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import persistent.collections.PersistentArray;
+
 public class PersistentDictionary<K, V> implements Map<K, V>, Iterable<PersistentKVP<K, V>>{
 	private PersistentArray persistentArray;
 	private PersistentDictionaryMetadata metadata;
