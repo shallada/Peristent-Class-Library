@@ -4,22 +4,25 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
+ * Implementation of the PersistentArray with in-memory caching of elements.
+ * Most heavy work is done by the cache. This implementation tries to maintain
+ * original functionality of given <code>PersistentArray</code> and hasten
+ * R/W with an appropriately sized cache of values
  * Created by stephen on 4/27/15.
  */
-public class CachedPersistentArray<E> implements PersistentArray {
+public class CachedPersistentArray<E> implements PersistentArray{
 
     private PersistentArray wrappedPA;
     private SizedLinkedList<E> itemCache;
-    private String pathToOpen;
     // long nextIndex;
     // int recordSize;
     // long recordCount
-    // ByteBuffer metadata;
-    // MdFIle data;
+    private ByteBuffer instanceMetadata;
 
-    public CachedPersistentArray(/* necessary params */) {
+    public CachedPersistentArray(int cacheLimit, PersistentArray wrappablePA) {
         // Code goes here
-
+        this.wrappedPA = wrappablePA;
+        this.itemCache = new SizedLinkedList<E>(cacheLimit);
     }
 
     /**
@@ -29,9 +32,7 @@ public class CachedPersistentArray<E> implements PersistentArray {
      */
     @Override
     public long allocate() throws IOException {
-        // set some initial returnValue
-        //
-        return 0; // the bytes of the wrappedPA + the size of the cache
+        return wrappedPA.allocate() + itemCache.size(); // the bytes of the wrappedPA + the size of the cache
     }
 
     @Override
@@ -44,6 +45,7 @@ public class CachedPersistentArray<E> implements PersistentArray {
         // if cache contains key
         if ( itemCache.containsKey(index) ) {
             // remove KV pair of index
+            itemCache.remove(Long.valueOf(index).intValue());
         }
 
         wrappedPA.delete(index);
@@ -70,6 +72,7 @@ public class CachedPersistentArray<E> implements PersistentArray {
      */
     @Override
     public ByteBuffer get( long index ) throws IOException {
+        ByteBuffer bufferForYou;
         // if cache contains index (as key)
         //     get the E from the cache
         //     fill the ByteBuffer with property values
@@ -78,25 +81,35 @@ public class CachedPersistentArray<E> implements PersistentArray {
         //     perform wrappedPA.get(index)
         //     store said get into the cache
 
+        if (itemCache.containsKey(index)) {
+            E e = itemCache.get((int) index);
+            bufferForYou = getMetadata();
+        }
+        else {
+            wrappedPA.get(index);
+            // make an E out of it... FIXME: Why doesn't this make sense?
+            bufferForYou = wrappedPA.getMetadata();
+        }
+
         // Example wrappedPA.get() behavior (from BaseBlockFile.java):
         //     new ByteBuffer of record size
         //     its contents will be the record at the index
         //     read for the record size into the ByteBuffer instance
         //     return said ByteBuffer instance
 
-        return null;
+        return bufferForYou;
     }
 
     @Override
     public void put( long index, ByteBuffer buffer ) throws IOException {
-        // caching in done on get requests, so wrappPA behavior is it
+        // caching in done on get requests, so wrappedPA behavior is it
         wrappedPA.put( index, buffer ) ;
     }
 
     @Override
     public long getRecordCount() {
         // return the wrappedPA.getRecordCount()
-        return 0;
+        return wrappedPA.getRecordCount();
     }
 
     @Override
@@ -106,13 +119,20 @@ public class CachedPersistentArray<E> implements PersistentArray {
           newByteBuffer = new ByteBuffer of size oldInstance PLUS cache MD
 
          */
-        return null;
+        ByteBuffer old = wrappedPA.getMetadata();
+        ByteBuffer allocate = ByteBuffer.allocate(old.capacity() + ( Long.BYTES * itemCache.size() ))
+                .put(old);
+
+        itemCache.getIndexSet().forEach(allocate::putLong);
+
+        return allocate;
     }
 
     @Override
     public void persistMetadata() throws IOException {
         // reset the metadata ByteBuffer position
-        // capture getMetaData (thusly delegate the heavy work to getMetadata())
-        // overwrite the bytes in (metadata : ByteBuffer) field
+        ByteBuffer metadata = (ByteBuffer) wrappedPA.getMetadata().position(0);
+        // Behavior should be that of wrappedPA, because Cache will be kept in memory
+        wrappedPA.persistMetadata();
     }
 }
